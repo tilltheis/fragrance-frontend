@@ -437,7 +437,7 @@ export default function App() {
     <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100">
       <div className="mx-auto max-w-7xl px-4 py-6 grid grid-cols-1 md:grid-cols-[320px_1fr] gap-6">
         {/* Sidebar */}
-        <aside className="md:sticky md:top-4 h-max border border-gray-200 dark:border-gray-800 rounded-2xl p-4 bg-gray-50 dark:bg-gray-900">
+        <aside className="md:sticky md:top-4 max-h-screen overflow-auto border border-gray-200 dark:border-gray-800 rounded-2xl p-4 bg-gray-50 dark:bg-gray-900">
           <h2 className="text-lg font-semibold mb-3">Filter</h2>
 
           {/* Brand */}
