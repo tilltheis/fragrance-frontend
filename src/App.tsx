@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect } from "react";
+import type { FragranceRecord, SeasonKey, OccasionKey } from "./models";
 
 /**
  * Duftdaten-App – Interaktiver Prototyp (Single-File)
@@ -8,22 +9,43 @@ import React, { useMemo, useState, useEffect } from "react";
  * - Alle Slider in 5%-Schritten; Autosave-ähnliches Verhalten lokal (LocalStorage)
  */
 
-// ---------- Hilfsfunktionen ----------
-function sum(obj) {
+// ---------- Typen & Hilfsfunktionen ----------
+interface AppFilters {
+  brands: string[];
+  names: string[];
+  types: string[];
+  notes: string[];
+  notesMode: "AND" | "OR";
+  reason: string;
+  comment: string;
+  seasons: SeasonKey[];
+  occasions: OccasionKey[];
+  scent: [number, number];
+  longevity: [number, number];
+  sillage: [number, number];
+  rating: [number, number];
+  owned: "all" | "yes" | "no";
+  sellers: string[];
+  quality: ("Low" | "Mid" | "High")[];
+  testDate: any; // Placeholder – nicht im Prototype genutzt
+  lastEdited: any; // Placeholder – nicht im Prototype genutzt
+  sort: "best" | "brand" | "name" | "id_new" | "id_old" | "test_new" | "test_old";
+}
+
+function sum(obj: Record<string, number> | undefined | null): number {
   if (!obj) return 0;
   return Object.values(obj).reduce((a, b) => a + (Number(b) || 0), 0);
 }
 
-function percentMap(obj) {
+function percentMap(obj: Record<string, number> | undefined | null): Record<string, number> {
   const s = sum(obj);
   if (!s) return {};
-  const out = {};
-  for (const [k, v] of Object.entries(obj)) out[k] = (v / s) * 100;
+  const out: Record<string, number> = {};
+  for (const [k, v] of Object.entries(obj || {})) out[k] = (Number(v) / s) * 100;
   return out;
 }
 
-// Weighted median for histogram buckets {"0":count, ..., "100":count}
-function bucketMedian(obj) {
+function bucketMedian(obj: Record<string, number> | undefined | null): number | null {
   if (!obj) return null;
   const entries = Object.entries(obj)
     .map(([k, v]) => [Number(k), Number(v)])
@@ -35,41 +57,40 @@ function bucketMedian(obj) {
     acc += cnt;
     if (acc >= total / 2) return bucket;
   }
-  return entries.at(-1)[0];
+  return entries.at(-1)?.[0] ?? null;
 }
 
-function clamp01(x) {
+function clamp01(x: number) {
   return Math.min(1, Math.max(0, x));
 }
 
-function debounced(fn, delay = 200) {
-  let t;
-  return (...args) => {
+function debounced<T extends (...args: any[]) => void>(fn: T, delay = 200) {
+  let t: ReturnType<typeof setTimeout> | undefined;
+  return (...args: Parameters<T>) => {
     clearTimeout(t);
     t = setTimeout(() => fn(...args), delay);
   };
 }
 
-// Quality tier heuristic based on total votes across major maps
-function inferQualityTier(item) {
+function inferQualityTier(item: FragranceRecord) {
   const n =
     sum(item.scent) +
     sum(item.longevity) +
     sum(item.sillage) +
     sum(item.season) +
     sum(item.occasion);
-  if (n >= 2000) return { tier: "High", tierScore: 1.0, n };
-  if (n >= 600) return { tier: "Mid", tierScore: 0.5, n };
-  return { tier: "Low", tierScore: 0, n };
+  if (n >= 2000) return { tier: "High" as const, tierScore: 1.0, n };
+  if (n >= 600) return { tier: "Mid" as const, tierScore: 0.5, n };
+  return { tier: "Low" as const, tierScore: 0, n };
 }
 
-function pct(n) {
+function pct(n: number | null | undefined) {
   if (n == null) return "–";
   return `${Math.round(n)}%`;
 }
 
-function unique(values) {
-  return Array.from(new Set(values.filter(Boolean)));
+function unique(values: (string | undefined | null)[]): string[] {
+  return Array.from(new Set(values.filter(Boolean) as string[]));
 }
 
 const BASE_NOTES_ICONS = {
@@ -94,7 +115,8 @@ const BASE_NOTES_ICONS = {
 };
 
 // ---------- UI Controls ----------
-function Range({ label, min = 0, max = 100, step = 5, value, onChange }) {
+interface RangeProps { label: string; min?: number; max?: number; step?: number; value: [number, number]; onChange: (v: [number, number]) => void; }
+function Range({ label, min = 0, max = 100, step = 5, value, onChange }: RangeProps) {
   const [minVal, maxVal] = value;
   return (
     <div className="mb-4">
@@ -128,7 +150,8 @@ function Range({ label, min = 0, max = 100, step = 5, value, onChange }) {
   );
 }
 
-function Chip({ children, active = false, onClick }) {
+interface ChipProps { children: React.ReactNode; active?: boolean; onClick?: () => void; }
+function Chip({ children, active = false, onClick }: ChipProps) {
   return (
     <button
       onClick={onClick}
@@ -143,21 +166,20 @@ function Chip({ children, active = false, onClick }) {
   );
 }
 
-function Badge({ children, tone = "default" }) {
+interface BadgeProps { children: React.ReactNode; tone?: "default" | "success" | "neutral"; }
+function Badge({ children, tone = "default" }: BadgeProps) {
   const tones = {
     default: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100",
     success: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300",
     neutral: "bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-100",
   };
-  return (
-    <span className={`inline-flex items-center rounded px-2 text-xs h-5 ${tones[tone]}`}>
-      {children}
-    </span>
-  );
+  const cls = tones[tone] || tones.default;
+  return <span className={`inline-flex items-center rounded px-2 text-xs h-5 ${cls}`}>{children}</span>;
 }
 
-function StackedBar({ data, palette }) {
-  const total = Object.values(data || {}).reduce((a, b) => a + b, 0);
+interface StackedBarProps { data: Record<string, number> | undefined | null; palette: Record<string, string>; }
+function StackedBar({ data, palette }: StackedBarProps) {
+  const total = Object.values(data || {}).reduce((a: number, b: number) => a + b, 0);
   const entries = Object.entries(data || {});
   return (
     <div className="w-full h-4 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden flex">
@@ -176,7 +198,7 @@ function StackedBar({ data, palette }) {
   );
 }
 
-function Dots({ count = 3 }) {
+function Dots({ count = 3 }: { count?: number }) {
   return (
     <span className="inline-flex gap-0.5 align-middle ml-1">
       {Array.from({ length: count }).map((_, i) => (
@@ -187,17 +209,16 @@ function Dots({ count = 3 }) {
 }
 
 // ---------- Best-Match Scoring ----------
-function bestMatchScore(item, filters) {
+function bestMatchScore(item: FragranceRecord, filters: AppFilters) {
   // Text-Score
   let text = 0;
-  const exactBrandHit =
-    filters.brands.length > 0 && filters.brands.includes(item.brand);
-  const exactNameHit = filters.names.length > 0 && filters.names.includes(item.name);
+  const exactBrandHit = filters.brands.length > 0 && (item.brand ? filters.brands.includes(item.brand) : false);
+  const exactNameHit = filters.names.length > 0 && (item.name ? filters.names.includes(item.name) : false);
   if (exactBrandHit) text += 0.5; // beide Tokens können 1.0 ergeben
   if (exactNameHit) text += 0.5;
 
   // Types
-  if (filters.types.length) {
+  if (filters.types.length && item.type) {
     const totalTypeVotes = sum(item.type);
     const typePct = filters.types.reduce((acc, t) => acc + ((item.type?.[t] || 0) / (totalTypeVotes || 1)), 0);
     text += clamp01(typePct); // grob normiert
@@ -257,13 +278,13 @@ import foobar from "./perfumes.json";
 
 // ---------- Hauptkomponente ----------
 export default function App() {
-  const initial = useMemo(() => foobar, []);
-  const [data, setData] = useState(initial);
-  const [showText, setShowText] = useState(false);
-  const [detail, setDetail] = useState(null);
+  const initial = useMemo<FragranceRecord[]>(() => foobar as FragranceRecord[], []);
+  const [data, setData] = useState<FragranceRecord[]>(initial);
+  const [showText, setShowText] = useState<boolean>(false);
+  const [detail, setDetail] = useState<FragranceRecord | null>(null);
 
   // Filter-State
-  const [filters, setFilters] = useState(() => {
+  const [filters, setFilters] = useState<AppFilters>(() => {
     const saved = localStorage.getItem("duftapp_filters");
     return (
       saved ? JSON.parse(saved) : {
@@ -296,15 +317,15 @@ export default function App() {
     save(filters);
   }, [filters]);
 
-  const brands = useMemo(() => unique(data.map((d) => d.brand)), [data]);
-  const names = useMemo(() => unique(data.map((d) => d.name)), [data]);
-  const allTypes = useMemo(() => unique(data.flatMap((d) => Object.keys(d.type || {}))), [data]);
-  const allNotes = useMemo(() => unique(data.flatMap((d) => (d.structure === "pyramid" ? [...(d.head||[]), ...(d.heart||[]), ...(d.base||[])] : (d.notes||[])))), [data]);
-  const allSellers = useMemo(() => unique(data.flatMap((d) => d.sellers || [])), [data]);
+  const brands = useMemo(() => new Set(unique(data.map((d) => d.brand))), [data]);
+  const names = useMemo(() => new Set(unique(data.map((d) => d.name))), [data]);
+  const allTypes = useMemo(() => new Set(unique(data.flatMap((d) => Object.keys(d.type || {})))), [data]);
+  const allNotes = useMemo(() => new Set(unique(data.flatMap((d) => (d.structure === "pyramid" ? [...(d.head||[]), ...(d.heart||[]), ...(d.base||[])] : (d.notes||[]))))), [data]);
+  const allSellers = useMemo(() => new Set(unique(data.flatMap((d) => d.sellers || []))), [data]);
 
   // --------- Filterlogik ---------
-  const filtered = useMemo(() => {
-    return data.filter((item) => {
+  const filtered = useMemo<FragranceRecord[]>(() => {
+    return data.filter((item: FragranceRecord) => {
       // Brand/Name exact
       if (filters.brands.length && !filters.brands.includes(item.brand)) return false;
       if (filters.names.length && !filters.names.includes(item.name)) return false;
@@ -381,8 +402,8 @@ export default function App() {
   }, [data, filters]);
 
   // --------- Sortierung ---------
-  const sorted = useMemo(() => {
-    const arr = [...filtered];
+  const sorted = useMemo<FragranceRecord[]>(() => {
+    const arr: FragranceRecord[] = [...filtered];
     switch (filters.sort) {
       case "brand":
         arr.sort((a, b) => a.brand.localeCompare(b.brand) || a.name.localeCompare(b.name));
@@ -421,31 +442,19 @@ export default function App() {
           {/* Brand */}
           <div className="mb-3">
             <label className="text-sm font-semibold">Brand (Exact)</label>
-            <SelectMulti
-              options={brands}
-              values={filters.brands}
-              onChange={(v) => setFilters({ ...filters, brands: v })}
-            />
+            <SelectMulti options={brands} values={filters.brands} onChange={(v) => setFilters({ ...filters, brands: v })} />
           </div>
 
           {/* Name */}
           <div className="mb-3">
             <label className="text-sm font-semibold">Name (Exact)</label>
-            <SelectMulti
-              options={names}
-              values={filters.names}
-              onChange={(v) => setFilters({ ...filters, names: v })}
-            />
+            <SelectMulti options={names} values={filters.names} onChange={(v) => setFilters({ ...filters, names: v })} />
           </div>
 
           {/* Types */}
           <div className="mb-3">
             <label className="text-sm font-semibold">Dufttypen (≥5 %)</label>
-            <SelectMulti
-              options={allTypes}
-              values={filters.types}
-              onChange={(v) => setFilters({ ...filters, types: v })}
-            />
+            <SelectMulti options={allTypes} values={filters.types} onChange={(v) => setFilters({ ...filters, types: v })} />
           </div>
 
           {/* Notes */}
@@ -470,11 +479,7 @@ export default function App() {
                 <span className={filters.notesMode === "AND" ? "font-semibold" : "opacity-70"}>AND</span>
               </div>
             </div>
-            <SelectMulti
-              options={allNotes}
-              values={filters.notes}
-              onChange={(v) => setFilters({ ...filters, notes: v })}
-            />
+            <SelectMulti options={allNotes} values={filters.notes} onChange={(v) => setFilters({ ...filters, notes: v })} />
           </div>
 
           {/* Reason/Comment */}
@@ -560,11 +565,7 @@ export default function App() {
           {/* Sellers */}
           <div className="mb-3">
             <label className="text-sm font-semibold">Sellers</label>
-            <SelectMulti
-              options={allSellers}
-              values={filters.sellers}
-              onChange={(v) => setFilters({ ...filters, sellers: v })}
-            />
+            <SelectMulti options={allSellers} values={filters.sellers} onChange={(v) => setFilters({ ...filters, sellers: v })} />
           </div>
 
           {/* Qualität */}
@@ -649,7 +650,8 @@ export default function App() {
   );
 }
 
-function Card({ item, showText, onOpen }) {
+interface CardProps { item: FragranceRecord; showText: boolean; onOpen: () => void; }
+function Card({ item, showText, onOpen }: CardProps) {
   const medScent = bucketMedian(item.scent);
   const medLong = bucketMedian(item.longevity);
   const medSil = bucketMedian(item.sillage);
@@ -724,7 +726,7 @@ function Card({ item, showText, onOpen }) {
   );
 }
 
-function Detail({ item, onClose }) {
+function Detail({ item, onClose }: { item: FragranceRecord; onClose: () => void }) {
   const medScent = bucketMedian(item.scent);
   const medLong = bucketMedian(item.longevity);
   const medSil = bucketMedian(item.sillage);
@@ -861,7 +863,7 @@ function Detail({ item, onClose }) {
   );
 }
 
-function Metric({ title, value }) {
+function Metric({ title, value }: { title: string; value: number | null | undefined }) {
   return (
     <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-3 bg-gray-50 dark:bg-gray-900">
       <div className="text-sm text-gray-500">{title}</div>
@@ -870,7 +872,7 @@ function Metric({ title, value }) {
   );
 }
 
-function NoteCol({ title, notes }) {
+function NoteCol({ title, notes }: { title: string; notes?: string[] }) {
   if (!notes?.length) return null;
   return (
     <div>
@@ -884,9 +886,10 @@ function NoteCol({ title, notes }) {
   );
 }
 
-function SelectMulti({ options, values, onChange }) {
+interface SelectMultiProps { options: Set<string>; values: string[]; onChange: (v: string[]) => void; }
+function SelectMulti({ options, values, onChange }: SelectMultiProps) {
   const [input, setInput] = useState("");
-  const filtered = useMemo(() => {
+  const filtered = useMemo<string[]>(() => {
     const q = input.toLowerCase();
     const arr =  options
       .values()
@@ -932,7 +935,8 @@ function SelectMulti({ options, values, onChange }) {
   );
 }
 
-function CheckboxGroup({ label, options, values, onChange }) {
+interface CheckboxGroupProps { label: string; options: string[]; values: string[]; onChange: (v: string[]) => void; }
+function CheckboxGroup({ label, options, values, onChange }: CheckboxGroupProps) {
   return (
     <div className="mb-3">
       <div className="text-sm font-semibold mb-1">{label}</div>
