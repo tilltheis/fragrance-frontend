@@ -910,10 +910,13 @@ function SelectMulti({ options, values, onChange }) {
   const [input, setInput] = useState("");
   const filtered = useMemo(() => {
     const q = input.toLowerCase();
-    return options
+    const arr =  options
+      .values()
       .filter((o) => !values.includes(o))
       .filter((o) => (!q ? true : o.toLowerCase().includes(q)))
-      .slice(0, 8);
+      .toArray();
+    arr.sort();
+    return arr;
   }, [options, values, input]);
 
   return (
