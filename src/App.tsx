@@ -11,6 +11,7 @@ interface DistributionStats {
   p25: number;
   p75: number;
   iqr: number;
+  count: number;
 }
 
 const SEASONS = ["Frühling", "Sommer", "Herbst", "Winter"] as const;
@@ -116,7 +117,8 @@ function toDistributionStats(dist: any): DistributionStats | null {
   const p25 = getPercentileFromBuckets(bucketDistribution, 25);
   const p75 = getPercentileFromBuckets(bucketDistribution, 75);
   const iqr = p75 - p25;
-  return { bucketDistribution, median, p25, p75, iqr };
+  const count = Object.values(bucketDistribution).reduce((a, b) => a + (b ?? 0), 0);
+  return { bucketDistribution, median, p25, p75, iqr, count };
 }
 
 function parseFragrance(item: any): Fragrance {
@@ -160,36 +162,48 @@ interface ViewState {
 
 const DATA: Fragrance[] = unparsedFragrances.map(parseFragrance);
 
+type EmojiColor = { light: string; dark: string; emoji: string };
+
+
 // Color and icon mappings
-const SEASON_COLORS = {
+const SEASON_COLORS: Record<SeasonKey, EmojiColor> = {
   "Frühling": { light: "#34D399", dark: "#6EE7B7", emoji: "🌱" },
   "Sommer": { light: "#FBBF24", dark: "#FACC15", emoji: "☀️" },
   "Herbst": { light: "#F97316", dark: "#FB923C", emoji: "🍂" },
   "Winter": { light: "#60A5FA", dark: "#93C5FD", emoji: "❄️" }
 } as const;
 
-const OCCASION_COLORS = {
+const OCCASION_COLORS: Record<OccasionKey, EmojiColor> = {
   "Täglich": { light: "#9CA3AF", dark: "#D1D5DB", emoji: "📅" },
   "Sport": { light: "#10B981", dark: "#34D399", emoji: "🏃" },
   "Freizeit": { light: "#3B82F6", dark: "#60A5FA", emoji: "🎮" },
+  "Ausgehen": { light: "#EC4899", dark: "#F472B6", emoji: "✨" },
   "Arbeit": { light: "#6366F1", dark: "#818CF8", emoji: "💼" },
-  "Abend": { light: "#F59E0B", dark: "#FBBF24", emoji: "🌙" },
-  "Ausgehen": { light: "#EC4899", dark: "#F472B6", emoji: "✨" }
+  "Abend": { light: "#F59E0B", dark: "#FBBF24", emoji: "🌙" }
 } as const;
 
-const TYPE_COLORS = {
-  "Zitrus": { light: "#FCD34D", dark: "#FDE68A", emoji: "☀️" },
-  "Grün": { light: "#34D399", dark: "#6EE7B7", emoji: "🍃" },
-  "Holzig": { light: "#92400E", dark: "#B45309", emoji: "🌲" },
+const TYPE_COLORS: Record<TypeKey, EmojiColor> = {
+  "Animalisch": { light: "#92400E", dark: "#B45309", emoji: "🦁" },
   "Aquatisch": { light: "#3B82F6", dark: "#60A5FA", emoji: "🌊" },
-  "Würzig": { light: "#F97316", dark: "#FB923C", emoji: "🔥" },
-  "Rauchig": { light: "#6B7280", dark: "#9CA3AF", emoji: "☁️" },
-  "Ledrig": { light: "#B45309", dark: "#D97706", emoji: "🥾" },
-  "Süß": { light: "#EC4899", dark: "#F472B6", emoji: "🍭" },
   "Blumig": { light: "#EC4899", dark: "#F472B6", emoji: "🌸" },
+  "Chypre": { light: "#A3E635", dark: "#84CC16", emoji: "🌿" },
+  "Cremig": { light: "#FDE68A", dark: "#FCD34D", emoji: "🥛" },
+  "Erdig": { light: "#A16207", dark: "#CA8A04", emoji: "🌱" },
+  "Fougère": { light: "#22C55E", dark: "#4ADE80", emoji: "🌾" },
+  "Frisch": { light: "#06B6D4", dark: "#22D3EE", emoji: "💨" },
   "Fruchtig": { light: "#F59E0B", dark: "#FBBF24", emoji: "🍑" },
+  "Gourmand": { light: "#F472B6", dark: "#F9A8D4", emoji: "🍫" },
+  "Grün": { light: "#34D399", dark: "#6EE7B7", emoji: "🍃" },
+  "Harzig": { light: "#F59E42", dark: "#FDBA74", emoji: "🪵" },
+  "Holzig": { light: "#92400E", dark: "#B45309", emoji: "🌲" },
+  "Ledrig": { light: "#B45309", dark: "#D97706", emoji: "🥾" },
   "Orientalisch": { light: "#7C2D12", dark: "#A16207", emoji: "🏺" },
-  "Frisch": { light: "#06B6D4", dark: "#22D3EE", emoji: "💨" }
+  "Pudrig": { light: "#E0E7FF", dark: "#C7D2FE", emoji: "🧴" },
+  "Rauchig": { light: "#6B7280", dark: "#9CA3AF", emoji: "☁️" },
+  "Süß": { light: "#EC4899", dark: "#F472B6", emoji: "🍭" },
+  "Synthetisch": { light: "#818CF8", dark: "#A5B4FC", emoji: "🧪" },
+  "Würzig": { light: "#F97316", dark: "#FB923C", emoji: "🔥" },
+  "Zitrus": { light: "#FCD34D", dark: "#FDE68A", emoji: "☀️" }
 } as const;
 
 interface CardProps {
@@ -201,9 +215,7 @@ interface CardProps {
 function FragranceCard({ fragrance, isDark, onSelect }: CardProps) {
   // Quality dots
   const getQualityDots = (fragrance: Fragrance) => {
-    // Simple heuristic based on available data
-    const hasGoodData = fragrance.scent || fragrance.longevity || fragrance.sillage;
-    return hasGoodData ? "•••" : "••";
+    return fragrance?.scent?.count ?? 0 >= 100 ? "•••" : fragrance?.scent?.count ?? 0 >= 50 ? "••" : "•";
   };
 
   // Type chips (≥5%)
@@ -211,56 +223,52 @@ function FragranceCard({ fragrance, isDark, onSelect }: CardProps) {
     if (!typeMap) return [];
     const total = Object.values(typeMap).reduce((sum, count) => sum + count, 0);
     if (total === 0) return [];
-    
+
     return Object.entries(typeMap)
       .map(([type, count]) => ({ type: type as TypeKey, percentage: (count / total) * 100 }))
       .filter(({ percentage }) => percentage >= 5)
       .sort((a, b) => b.percentage - a.percentage)
-      .slice(0, 3); // Max 3 chips
+      .slice(0, 2); // Max 2 chips
   };
 
-  // Stacked bar data
-  const getStackedBarData = (map: Record<string, number> | null) => {
+  // Stacked bar data with order
+  const getStackedBarData = <T extends string>(
+    map: Partial<Record<T, number>> | null,
+    order: readonly T[]
+  ) => {
     if (!map) return [];
     const total = Object.values(map).reduce((sum, count) => sum + count, 0);
     if (total === 0) return [];
-    
-    return Object.entries(map)
-      .map(([key, count]) => ({ key, percentage: (count / total) * 100 }))
-      .filter(({ percentage }) => percentage > 0)
-      .sort((a, b) => b.percentage - a.percentage);
+    return order
+      .map((key) => ({
+        key,
+        percentage: ((map[key] ?? 0) / total) * 100 
+      }))
+      .filter(({ percentage }) => percentage > 0);
   };
 
   const typeChips = getTypeChips(fragrance.type);
-  const seasonData = getStackedBarData(fragrance.season);
-  const occasionData = getStackedBarData(fragrance.occasion);
+  const seasonData = getStackedBarData(fragrance.season, SEASONS);
+  const occasionData = getStackedBarData(fragrance.occasion, OCCASIONS);
 
   return (
-    <div 
+    <div
       className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
       onClick={() => onSelect(fragrance.id)}
     >
       {/* Header */}
       <div className="mb-2">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 leading-tight">
-          {fragrance.brand || fragrance.brandQuery} • {fragrance.name || fragrance.nameQuery}
+        <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 leading-tight">
+          {fragrance.brand || fragrance.brandQuery}
+        </h4>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+          {fragrance.name || fragrance.nameQuery}
         </h3>
         {fragrance.concentration && (
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
             {fragrance.concentration} {getQualityDots(fragrance)}
           </p>
         )}
-      </div>
-
-      {/* Owned Status */}
-      <div className="mb-3">
-        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-          fragrance.owned 
-            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
-            : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
-        }`}>
-          {fragrance.owned ? '✅ Besitze ich' : '— Nicht besessen'}
-        </span>
       </div>
 
       {/* Type Chips */}
@@ -268,21 +276,20 @@ function FragranceCard({ fragrance, isDark, onSelect }: CardProps) {
         <div className="mb-3">
           <div className="flex flex-wrap gap-1">
             {typeChips.map(({ type, percentage }) => {
-              const config = TYPE_COLORS[type] || { light: "#6B7280", dark: "#9CA3AF", emoji: "📝" };
+              const config = TYPE_COLORS[type];
               const color = isDark ? config.dark : config.light;
-              const intensity = Math.min(3, Math.ceil(percentage / 15)); // 1-3 ticks
-              const ticks = "▪".repeat(intensity);
-              
+              const ticks = percentage >= 30 ? "▪▪▪" : percentage >= 20 ? "▪▪" : "▪";
+
               return (
-                <span 
+                <span
                   key={type}
                   className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
-                  style={{ 
-                    backgroundColor: color + "20", 
+                  style={{
+                    backgroundColor: color + "20",
                     color: color,
                     border: `1px solid ${color}40`
                   }}
-                  title={`${type}: ${Math.round(percentage)}%`}
+                  title={`${config.emoji} ${type}: ${Math.round(percentage)}%`}
                 >
                   {config.emoji} {type} {ticks}
                 </span>
@@ -296,19 +303,30 @@ function FragranceCard({ fragrance, isDark, onSelect }: CardProps) {
       {seasonData.length > 0 && (
         <div className="mb-2">
           <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Saison</div>
-          <div className="flex h-3 rounded overflow-hidden bg-gray-200 dark:bg-gray-700">
+          <div className="flex h-5 rounded overflow-hidden bg-gray-200 dark:bg-gray-700">
             {seasonData.map(({ key, percentage }) => {
               const config = SEASON_COLORS[key as keyof typeof SEASON_COLORS];
-              const color = config ? (isDark ? config.dark : config.light) : "#6B7280";
+              const color = isDark ? config.dark : config.light;
               return (
                 <div
                   key={key}
-                  style={{ 
-                    width: `${percentage}%`, 
-                    backgroundColor: color 
+                  style={{
+                    width: `${percentage}%`,
+                    backgroundColor: color
                   }}
-                  title={`${config?.emoji || ""} ${key}: ${Math.round(percentage)}%`}
-                />
+                  title={`${config.emoji || ""} ${key}: ${Math.round(percentage)}%`}
+                >
+                  <span
+                    className="flex items-center justify-center h-full text-[10px]"
+                    style={{
+                      textShadow: isDark
+                        ? "0 1px 2px #000, 0 0px 2px #000"
+                        : "0 1px 2px #fff, 0 0px 2px #fff"
+                    }}
+                  >
+                    {config.emoji}
+                  </span>
+                </div>
               );
             })}
           </div>
@@ -319,19 +337,30 @@ function FragranceCard({ fragrance, isDark, onSelect }: CardProps) {
       {occasionData.length > 0 && (
         <div className="mb-3">
           <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Anlass</div>
-          <div className="flex h-3 rounded overflow-hidden bg-gray-200 dark:bg-gray-700">
+          <div className="flex h-5 rounded overflow-hidden bg-gray-200 dark:bg-gray-700">
             {occasionData.map(({ key, percentage }) => {
               const config = OCCASION_COLORS[key as keyof typeof OCCASION_COLORS];
               const color = config ? (isDark ? config.dark : config.light) : "#6B7280";
               return (
                 <div
                   key={key}
-                  style={{ 
-                    width: `${percentage}%`, 
-                    backgroundColor: color 
+                  style={{
+                    width: `${percentage}%`,
+                    backgroundColor: color
                   }}
                   title={`${config?.emoji || ""} ${key}: ${Math.round(percentage)}%`}
-                />
+                >
+                  <span
+                    className="flex items-center justify-center h-full text-[10px]"
+                    style={{
+                      textShadow: isDark
+                        ? "0 1px 2px #000, 0 0px 2px #000"
+                        : "0 1px 2px #fff, 0 0px 2px #fff"
+                    }}
+                  >
+                    {config.emoji}
+                  </span>
+                </div>
               );
             })}
           </div>
@@ -357,11 +386,24 @@ function FragranceCard({ fragrance, isDark, onSelect }: CardProps) {
             </span>
           )}
         </div>
-        {fragrance.rating && (
-          <span className="text-blue-600 dark:text-blue-400 font-medium">
-            ⭐ {Math.round(fragrance.rating * 100)}%
+      </div>
+
+
+      <div className="flex justify-between items-center text-sm">
+        <div className="flex gap-3">
+          {fragrance.rating && (
+            <span className="text-blue-600 dark:text-blue-400 font-medium">
+              ⭐ {Math.round(fragrance.rating * 100)}%
+            </span>
+          )}
+          {/* Owned Status */}
+          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${fragrance.owned
+            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+            : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
+            }`}>
+            {fragrance.owned ? '✅ Besitze ich' : '— Nicht besessen'}
           </span>
-        )}
+        </div>
       </div>
     </div>
   );
@@ -375,7 +417,7 @@ export default function App() {
   React.useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     setIsDark(mediaQuery.matches);
-    
+
     const handler = (e: MediaQueryListEvent) => setIsDark(e.matches);
     mediaQuery.addEventListener('change', handler);
     return () => mediaQuery.removeEventListener('change', handler);
