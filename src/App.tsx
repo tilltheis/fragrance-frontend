@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from "react";
-import type { FragranceRecord, SeasonKey, OccasionKey } from "./models";
+import type { FragranceRecord, FilterState, SortKey, SortDir } from "./models";
 
 /**
  * Duftdaten-App – Interaktiver Prototyp (Single-File)
@@ -10,27 +10,6 @@ import type { FragranceRecord, SeasonKey, OccasionKey } from "./models";
  */
 
 // ---------- Typen & Hilfsfunktionen ----------
-interface AppFilters {
-  brands: string[];
-  names: string[];
-  types: string[];
-  notes: string[];
-  notesMode: "AND" | "OR";
-  reason: string;
-  comment: string;
-  seasons: SeasonKey[];
-  occasions: OccasionKey[];
-  scent: [number, number];
-  longevity: [number, number];
-  sillage: [number, number];
-  rating: [number, number];
-  owned: "all" | "yes" | "no";
-  sellers: string[];
-  quality: ("Low" | "Mid" | "High")[];
-  testDate: any; // Placeholder – nicht im Prototype genutzt
-  lastEdited: any; // Placeholder – nicht im Prototype genutzt
-  sort: "best" | "brand" | "name" | "id_new" | "id_old" | "test_new" | "test_old";
-}
 
 function sum(obj: Record<string, number> | undefined | null): number {
   if (!obj) return 0;
@@ -209,11 +188,11 @@ function Dots({ count = 3 }: { count?: number }) {
 }
 
 // ---------- Best-Match Scoring ----------
-function bestMatchScore(item: FragranceRecord, filters: AppFilters) {
+function bestMatchScore(item: FragranceRecord, filters: FilterState) {
   // Text-Score
   let text = 0;
-  const exactBrandHit = filters.brands.length > 0 && (item.brand ? filters.brands.includes(item.brand) : false);
-  const exactNameHit = filters.names.length > 0 && (item.name ? filters.names.includes(item.name) : false);
+  const exactBrandHit = filters.brand.length > 0 && (item.brand ? filters.brand.includes(item.brand) : false);
+  const exactNameHit = filters.name.length > 0 && (item.name ? filters.name.includes(item.name) : false);
   if (exactBrandHit) text += 0.5; // beide Tokens können 1.0 ergeben
   if (exactNameHit) text += 0.5;
 
@@ -237,7 +216,7 @@ function bestMatchScore(item: FragranceRecord, filters: AppFilters) {
   }
 
   // Reason/Comment substring
-  const rcNeedle = (filters.reason + " " + filters.comment).trim().toLowerCase();
+  const rcNeedle = ((filters.reasonQuery||"") + " " + (filters.commentQuery||"")).trim().toLowerCase();
   if (rcNeedle) {
     const hay = `${item.reason||""} ${item.comment||""}`.toLowerCase();
     text += hay.includes(rcNeedle) ? 0.5 : 0;
@@ -246,14 +225,14 @@ function bestMatchScore(item: FragranceRecord, filters: AppFilters) {
 
   // Fach-Score (Season/Occasion thresholds & type strength)
   let fach = 0;
-  if (filters.seasons.length) {
+  if (filters.season.length) {
     const pm = percentMap(item.season);
-    const ok = filters.seasons.some((s) => (pm[s] || 0) >= 20);
+    const ok = filters.season.some((s) => (pm[s] || 0) >= 20);
     fach += ok ? 0.5 : 0;
   }
-  if (filters.occasions.length) {
+  if (filters.occasion.length) {
     const pm = percentMap(item.occasion);
-    const ok = filters.occasions.some((s) => (pm[s] || 0) >= 20);
+    const ok = filters.occasion.some((s) => (pm[s] || 0) >= 20);
     fach += ok ? 0.5 : 0;
   }
   // type-strength proxy
@@ -279,41 +258,71 @@ import foobar from "./perfumes.json";
 // ---------- Hauptkomponente ----------
 export default function App() {
   const initial = useMemo<FragranceRecord[]>(() => foobar as FragranceRecord[], []);
-  const [data, setData] = useState<FragranceRecord[]>(initial);
+  const [data] = useState<FragranceRecord[]>(initial);
   const [showText, setShowText] = useState<boolean>(false);
   const [detail, setDetail] = useState<FragranceRecord | null>(null);
 
-  // Filter-State
-  const [filters, setFilters] = useState<AppFilters>(() => {
-    const saved = localStorage.getItem("duftapp_filters");
-    return (
-      saved ? JSON.parse(saved) : {
-        brands: [],
-        names: [],
-        types: [],
-        notes: [],
-        notesMode: "OR",
-        reason: "",
-        comment: "",
-        seasons: [],
-        occasions: [],
-        scent: [0, 100],
-        longevity: [0, 100],
-        sillage: [0, 100],
-        rating: [0, 100],
-        owned: "all", // all | yes | no
-        sellers: [],
-        quality: [], // Low Mid High
-        testDate: null,
-        lastEdited: null,
-        sort: "best", // best | brand | name | id_new | id_old | test_new | test_old
-      }
-    );
+  // Migration & Initialisierung FilterState
+  function migrate(raw: any): FilterState {
+    if (!raw || typeof raw !== 'object') {
+      return { brand: [], name: [], types: [], notes: [], notesMode: 'OR', season: [], occasion: [], scent: [0,100], longevity: [0,100], sillage: [0,100], rating: [0,100], owned: 'all', sellers: [], quality: [], reasonQuery: '', commentQuery: '' };
+    }
+    if ('brand' in raw || 'name' in raw) {
+      return {
+        brand: raw.brand ?? [],
+        name: raw.name ?? [],
+        types: raw.types ?? [],
+        notes: raw.notes ?? [],
+        notesMode: raw.notesMode === 'AND' ? 'AND' : 'OR',
+        season: raw.season ?? [],
+        occasion: raw.occasion ?? [],
+        scent: raw.scent ?? [0,100],
+        longevity: raw.longevity ?? [0,100],
+        sillage: raw.sillage ?? [0,100],
+        rating: raw.rating ?? [0,100],
+        owned: raw.owned ?? 'all',
+        sellers: raw.sellers ?? [],
+        quality: raw.quality ?? [],
+        reasonQuery: raw.reasonQuery ?? '',
+        commentQuery: raw.commentQuery ?? '',
+        testDate: raw.testDate,
+        lastEdited: raw.lastEdited,
+      };
+    }
+    // Legacy Schema -> neues Mapping
+    return {
+      brand: raw.brands ?? [],
+      name: raw.names ?? [],
+      types: raw.types ?? [],
+      notes: raw.notes ?? [],
+      notesMode: raw.notesMode === 'AND' ? 'AND' : 'OR',
+      season: raw.seasons ?? [],
+      occasion: raw.occasions ?? [],
+      scent: raw.scent ?? [0,100],
+      longevity: raw.longevity ?? [0,100],
+      sillage: raw.sillage ?? [0,100],
+      rating: raw.rating ?? [0,100],
+      owned: raw.owned ?? 'all',
+      sellers: raw.sellers ?? [],
+      quality: raw.quality ?? [],
+      reasonQuery: raw.reason ?? '',
+      commentQuery: raw.comment ?? '',
+      testDate: raw.testDate ?? undefined,
+      lastEdited: raw.lastEdited ?? undefined,
+    };
+  }
+
+  const [filters, setFilters] = useState<FilterState>(() => {
+    const saved = localStorage.getItem('duftapp_filters');
+    try { return migrate(saved ? JSON.parse(saved) : null); } catch { return migrate(null); }
   });
 
-  // Persist filters
+  // Sortierung getrennt (View-Aspekt)
+  const [sort, setSort] = useState<{ key: SortKey; dir: SortDir }>({ key: 'best_match', dir: 'desc' });
+
+  // Persist filters (nur FilterState, Sort separat falls nötig)
   useEffect(() => {
-    const save = debounced((v) => localStorage.setItem("duftapp_filters", JSON.stringify(v)), 300);
+    const save = debounced((v: FilterState) => localStorage.setItem("duftapp_filters", JSON.stringify(v)), 300);
     save(filters);
   }, [filters]);
 
@@ -327,8 +336,8 @@ export default function App() {
   const filtered = useMemo<FragranceRecord[]>(() => {
     return data.filter((item: FragranceRecord) => {
       // Brand/Name exact
-      if (filters.brands.length && !filters.brands.includes(item.brand)) return false;
-      if (filters.names.length && !filters.names.includes(item.name)) return false;
+      if (filters.brand.length && !filters.brand.includes(item.brand || '')) return false;
+      if (filters.name.length && !filters.name.includes(item.name || '')) return false;
 
       // Types: Treffer wenn Typ >= 5%
       if (filters.types.length) {
@@ -349,25 +358,25 @@ export default function App() {
       }
 
       // Reason/Comment substring (separat)
-      if (filters.reason?.trim()) {
-        const needle = filters.reason.trim().toLowerCase();
+      if (filters.reasonQuery?.trim()) {
+        const needle = filters.reasonQuery.trim().toLowerCase();
         const hay = `${item.reason || ""}`.toLowerCase();
         if (!hay.includes(needle)) return false;
       }
-      if (filters.comment?.trim()) {
-        const needle = filters.comment.trim().toLowerCase();
+      if (filters.commentQuery?.trim()) {
+        const needle = filters.commentQuery.trim().toLowerCase();
         const hay = `${item.comment || ""}`.toLowerCase();
         if (!hay.includes(needle)) return false;
       }
 
       // Saison & Anlass ≥20%
-      if (filters.seasons.length) {
+      if (filters.season.length) {
         const pm = percentMap(item.season);
-        if (!filters.seasons.some((s) => (pm[s] || 0) >= 20)) return false;
+        if (!filters.season.some((s) => (pm[s] || 0) >= 20)) return false;
       }
-      if (filters.occasions.length) {
+      if (filters.occasion.length) {
         const pm = percentMap(item.occasion);
-        if (!filters.occasions.some((s) => (pm[s] || 0) >= 20)) return false;
+        if (!filters.occasion.some((s) => (pm[s] || 0) >= 20)) return false;
       }
 
       // Range-Slider (Median)
@@ -404,32 +413,30 @@ export default function App() {
   // --------- Sortierung ---------
   const sorted = useMemo<FragranceRecord[]>(() => {
     const arr: FragranceRecord[] = [...filtered];
-    switch (filters.sort) {
-      case "brand":
-        arr.sort((a, b) => a.brand.localeCompare(b.brand) || a.name.localeCompare(b.name));
-        break;
-      case "name":
-        arr.sort((a, b) => a.name.localeCompare(b.name) || a.brand.localeCompare(b.brand));
-        break;
-      case "id_new":
-        arr.sort((a, b) => b.id - a.id);
-        break;
-      case "id_old":
-        arr.sort((a, b) => a.id - b.id);
-        break;
-      case "test_new":
-        // keine echten timestamps im Sample -> Proxy: höhere id = neuer
-        arr.sort((a, b) => b.id - a.id);
-        break;
-      case "test_old":
-        arr.sort((a, b) => a.id - b.id);
-        break;
-      case "best":
-      default:
-        arr.sort((a, b) => bestMatchScore(b, filters) - bestMatchScore(a, filters));
-    }
+    arr.sort((a, b) => {
+      let cmp = 0;
+      switch (sort.key) {
+        case 'brand':
+          cmp = (a.brand||'').localeCompare(b.brand||'') || (a.name||'').localeCompare(b.name||'');
+          break;
+        case 'name':
+          cmp = (a.name||'').localeCompare(b.name||'') || (a.brand||'').localeCompare(b.brand||'');
+          break;
+        case 'id':
+          cmp = a.id - b.id;
+          break;
+        case 'test_date':
+          cmp = (a.test_date||'').localeCompare(b.test_date||'');
+          break;
+        case 'best_match':
+        default:
+          cmp = bestMatchScore(a, filters) - bestMatchScore(b, filters); // asc by score
+          break;
+      }
+      return sort.dir === 'asc' ? cmp : -cmp;
+    });
     return arr;
-  }, [filtered, filters]);
+  }, [filtered, filters, sort]);
 
   // ---------- UI ----------
   return (
@@ -442,13 +449,13 @@ export default function App() {
           {/* Brand */}
           <div className="mb-3">
             <label className="text-sm font-semibold">Brand (Exact)</label>
-            <SelectMulti options={brands} values={filters.brands} onChange={(v) => setFilters({ ...filters, brands: v })} />
+            <SelectMulti options={brands} values={filters.brand} onChange={(v) => setFilters({ ...filters, brand: v })} />
           </div>
 
           {/* Name */}
           <div className="mb-3">
             <label className="text-sm font-semibold">Name (Exact)</label>
-            <SelectMulti options={names} values={filters.names} onChange={(v) => setFilters({ ...filters, names: v })} />
+            <SelectMulti options={names} values={filters.name} onChange={(v) => setFilters({ ...filters, name: v })} />
           </div>
 
           {/* Types */}
@@ -488,8 +495,8 @@ export default function App() {
               <label className="text-sm font-semibold">Reason (Substring)</label>
               <input
                 className="w-full mt-1 px-2 py-1 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950"
-                value={filters.reason}
-                onChange={(e) => setFilters({ ...filters, reason: e.target.value })}
+                value={filters.reasonQuery}
+                onChange={(e) => setFilters({ ...filters, reasonQuery: e.target.value })}
                 placeholder="Text…"
               />
             </div>
@@ -497,8 +504,8 @@ export default function App() {
               <label className="text-sm font-semibold">Comment (Substring)</label>
               <input
                 className="w-full mt-1 px-2 py-1 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950"
-                value={filters.comment}
-                onChange={(e) => setFilters({ ...filters, comment: e.target.value })}
+                value={filters.commentQuery}
+                onChange={(e) => setFilters({ ...filters, commentQuery: e.target.value })}
                 placeholder="Text…"
               />
             </div>
@@ -508,14 +515,14 @@ export default function App() {
           <CheckboxGroup
             label="Saison (≥20 %)"
             options={["Frühling", "Sommer", "Herbst", "Winter"]}
-            values={filters.seasons}
-            onChange={(v) => setFilters({ ...filters, seasons: v })}
+            values={filters.season}
+            onChange={(v) => setFilters({ ...filters, season: v })}
           />
           <CheckboxGroup
             label="Anlass (≥20 %)"
             options={["Täglich", "Sport", "Freizeit", "Arbeit", "Abend", "Ausgehen"]}
-            values={filters.occasions}
-            onChange={(v) => setFilters({ ...filters, occasions: v })}
+            values={filters.occasion}
+            onChange={(v) => setFilters({ ...filters, occasion: v })}
           />
 
           {/* Ranges */}
@@ -580,8 +587,27 @@ export default function App() {
             <div className="text-sm font-semibold">Sortierung</div>
             <select
               className="px-2 py-1 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950 text-sm"
-              value={filters.sort}
-              onChange={(e) => setFilters({ ...filters, sort: e.target.value })}
+              value={(() => {
+                if (sort.key === 'best_match') return 'best';
+                if (sort.key === 'brand') return 'brand';
+                if (sort.key === 'name') return 'name';
+                if (sort.key === 'id') return sort.dir === 'desc' ? 'id_new' : 'id_old';
+                if (sort.key === 'test_date') return sort.dir === 'desc' ? 'test_new' : 'test_old';
+                return 'best';
+              })()}
+              onChange={(e) => {
+                const v = e.target.value;
+                switch (v) {
+                  case 'brand': return setSort({ key: 'brand', dir: 'asc' });
+                  case 'name': return setSort({ key: 'name', dir: 'asc' });
+                  case 'id_new': return setSort({ key: 'id', dir: 'desc' });
+                  case 'id_old': return setSort({ key: 'id', dir: 'asc' });
+                  case 'test_new': return setSort({ key: 'test_date', dir: 'desc' });
+                  case 'test_old': return setSort({ key: 'test_date', dir: 'asc' });
+                  case 'best':
+                  default: return setSort({ key: 'best_match', dir: 'desc' });
+                }
+              }}
             >
               <option value="best">Best Match</option>
               <option value="brand">Marke</option>
@@ -598,14 +624,14 @@ export default function App() {
               className="flex-1 rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm"
               onClick={() => setFilters({
                 ...filters,
-                brands: [],
-                names: [],
+                brand: [],
+                name: [],
                 types: [],
                 notes: [],
-                reason: "",
-                comment: "",
-                seasons: [],
-                occasions: [],
+                reasonQuery: "",
+                commentQuery: "",
+                season: [],
+                occasion: [],
                 scent: [0, 100],
                 longevity: [0, 100],
                 sillage: [0, 100],
