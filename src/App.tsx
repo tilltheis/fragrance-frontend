@@ -274,9 +274,12 @@ function bestMatchScore(item, filters) {
   return score;
 }
 
+import foobar from "./perfumes.json";
+
 // ---------- Hauptkomponente ----------
 export default function App() {
-  const initial = useMemo(() => parseJSONL(JSONL), []);
+  // const initial = useMemo(() => parseJSONL(JSONL), []);
+  const initial = useMemo(() => foobar, []);
   const [data, setData] = useState(initial);
   const [showText, setShowText] = useState(false);
   const [detail, setDetail] = useState(null);
