@@ -1,19 +1,19 @@
-import React from 'react';
+import { useState } from 'react';
 import unparsedFragrances from './fragrances.json';
 import { parseFragrance, type Fragrance } from './types';
 import { TypeChips } from './TypeChips';
 import { SeasonBar } from './SeasonBar';
 import { OccasionBar } from './OccasionBar';
+import { AppearanceSelector } from './AppearanceSelector';
 
 const DATA: Fragrance[] = unparsedFragrances.map(parseFragrance);
 
 interface CardProps {
   fragrance: Fragrance;
-  isDark: boolean;
   onSelect: (id: number) => void;
 }
 
-function FragranceCard({ fragrance, isDark, onSelect }: CardProps) {
+function FragranceCard({ fragrance, onSelect }: CardProps) {
   // Quality dots
   const getQualityDots = (fragrance: Fragrance) => {
     return fragrance?.scent?.count ?? 0 >= 100 ? "•••" : fragrance?.scent?.count ?? 0 >= 50 ? "••" : "•";
@@ -98,23 +98,7 @@ function FragranceCard({ fragrance, isDark, onSelect }: CardProps) {
 }
 
 export default function App() {
-  const [isDark, setIsDark] = React.useState(false);
-  const [selectedId, setSelectedId] = React.useState<number | null>(null);
-
-  // Dark mode effect
-  React.useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    setIsDark(mediaQuery.matches);
-
-    const handler = (e: MediaQueryListEvent) => setIsDark(e.matches);
-    mediaQuery.addEventListener('change', handler);
-    return () => mediaQuery.removeEventListener('change', handler);
-  }, []);
-
-  // Toggle dark mode
-  React.useEffect(() => {
-    document.documentElement.classList.toggle('dark', isDark);
-  }, [isDark]);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   const handleCardSelect = (id: number) => {
     setSelectedId(id);
@@ -131,12 +115,7 @@ export default function App() {
             <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
               Duftsammlung
             </h1>
-            <button
-              onClick={() => setIsDark(!isDark)}
-              className="px-3 py-2 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-            >
-              {isDark ? '☀️' : '🌙'}
-            </button>
+            <AppearanceSelector />
           </div>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
             {DATA.length} Düfte in der Sammlung
@@ -151,7 +130,6 @@ export default function App() {
             <FragranceCard
               key={fragrance.id}
               fragrance={fragrance}
-              isDark={isDark}
               onSelect={handleCardSelect}
             />
           ))}
