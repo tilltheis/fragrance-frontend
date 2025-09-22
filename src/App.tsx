@@ -1,7 +1,9 @@
 import React from 'react';
 import unparsedFragrances from './fragrances.json';
-import { OCCASION_COLORS, OCCASIONS, parseFragrance, SEASON_COLORS, SEASONS, type Fragrance, type TypeKey, type TypeMap } from './types';
+import { parseFragrance, type Fragrance } from './types';
 import { TypeChips } from './TypeChips';
+import { SeasonBar } from './SeasonBar';
+import { OccasionBar } from './OccasionBar';
 
 const DATA: Fragrance[] = unparsedFragrances.map(parseFragrance);
 
@@ -16,25 +18,6 @@ function FragranceCard({ fragrance, isDark, onSelect }: CardProps) {
   const getQualityDots = (fragrance: Fragrance) => {
     return fragrance?.scent?.count ?? 0 >= 100 ? "•••" : fragrance?.scent?.count ?? 0 >= 50 ? "••" : "•";
   };
-
-  // Stacked bar data with order
-  const getStackedBarData = <T extends string>(
-    map: Partial<Record<T, number>> | null,
-    order: readonly T[]
-  ) => {
-    if (!map) return [];
-    const total = Object.values(map).reduce((sum, count) => sum + count, 0);
-    if (total === 0) return [];
-    return order
-      .map((key) => ({
-        key,
-        percentage: ((map[key] ?? 0) / total) * 100 
-      }))
-      .filter(({ percentage }) => percentage > 0);
-  };
-
-  const seasonData = getStackedBarData(fragrance.season, SEASONS);
-  const occasionData = getStackedBarData(fragrance.occasion, OCCASIONS);
 
   return (
     <div
@@ -58,71 +41,17 @@ function FragranceCard({ fragrance, isDark, onSelect }: CardProps) {
 
       {fragrance.type && <TypeChips typeMap={fragrance.type} />}
 
-      {/* Season Bar */}
-      {seasonData.length > 0 && (
+      {fragrance.season && (
         <div className="mb-2">
           <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Saison</div>
-          <div className="flex h-5 rounded overflow-hidden bg-gray-200 dark:bg-gray-700">
-            {seasonData.map(({ key, percentage }) => {
-              const config = SEASON_COLORS[key as keyof typeof SEASON_COLORS];
-              const color = isDark ? config.dark : config.light;
-              return (
-                <div
-                  key={key}
-                  style={{
-                    width: `${percentage}%`,
-                    backgroundColor: color
-                  }}
-                  title={`${config.emoji || ""} ${key}: ${Math.round(percentage)}%`}
-                >
-                  <span
-                    className="flex items-center justify-center h-full text-[10px]"
-                    style={{
-                      textShadow: isDark
-                        ? "0 1px 2px #000, 0 0px 2px #000"
-                        : "0 1px 2px #fff, 0 0px 2px #fff"
-                    }}
-                  >
-                    {config.emoji}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
+          <SeasonBar map={fragrance.season} />
         </div>
       )}
 
-      {/* Occasion Bar */}
-      {occasionData.length > 0 && (
-        <div className="mb-3">
+      {fragrance.occasion && (
+        <div className="mb-2">
           <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Anlass</div>
-          <div className="flex h-5 rounded overflow-hidden bg-gray-200 dark:bg-gray-700">
-            {occasionData.map(({ key, percentage }) => {
-              const config = OCCASION_COLORS[key as keyof typeof OCCASION_COLORS];
-              const color = config ? (isDark ? config.dark : config.light) : "#6B7280";
-              return (
-                <div
-                  key={key}
-                  style={{
-                    width: `${percentage}%`,
-                    backgroundColor: color
-                  }}
-                  title={`${config?.emoji || ""} ${key}: ${Math.round(percentage)}%`}
-                >
-                  <span
-                    className="flex items-center justify-center h-full text-[10px]"
-                    style={{
-                      textShadow: isDark
-                        ? "0 1px 2px #000, 0 0px 2px #000"
-                        : "0 1px 2px #fff, 0 0px 2px #fff"
-                    }}
-                  >
-                    {config.emoji}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
+          <OccasionBar map={fragrance.occasion} />
         </div>
       )}
 

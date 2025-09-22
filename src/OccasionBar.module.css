@@ -1,0 +1,17 @@
+.root {
+  --Täglich: #9CA3AF;
+  --Sport: #10B981;
+  --Freizeit: #3B82F6;
+  --Ausgehen: #EC4899;
+  --Arbeit: #6366F1;
+  --Abend: #F59E0B;
+}
+
+:global(.dark) .root {
+  --Täglich: #D1D5DB;
+  --Sport: #34D399;
+  --Freizeit: #60A5FA;
+  --Ausgehen: #F472B6;
+  --Arbeit: #818CF8;
+  --Abend: #FBBF24;
+}

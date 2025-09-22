@@ -1,0 +1,13 @@
+.root {
+  --Frühling: #34D399;
+  --Sommer: #FBBF24;
+  --Herbst: #F97316;
+  --Winter: #60A5FA;
+}
+
+:global(.dark) .root {
+  --Frühling: #6EE7B7;
+  --Sommer: #FACC15;
+  --Herbst: #FB923C;
+  --Winter: #93C5FD;
+}
