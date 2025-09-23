@@ -1,9 +1,0 @@
-.root {
-  --rating-track: #FEE2E2;
-  --rating-fill: #DC2626;
-}
-
-:global(.dark) .root {
-  --rating-track: #450A0A;
-  --rating-fill: #B91C1C;
-}

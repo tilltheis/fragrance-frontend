@@ -1,6 +1,6 @@
 export type StackedBarSegmentDisplayData<T extends string> = {
   key: T;
-  color: string;
+  color: string; // TODO: use classes instead of colors
   label: string;
   value: string;
 };

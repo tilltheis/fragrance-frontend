@@ -1,4 +1,3 @@
-import styles from './FragranceCard.module.css';
 import { TypeChips } from './TypeChips';
 import { SeasonBar } from './SeasonBar';
 import { OccasionBar } from './OccasionBar';
@@ -19,19 +18,19 @@ export function FragranceCard({ fragrance, onSelect }: CardProps) {
 
   return (
     <div
-      className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+      className="bg-card-bg text-card-fg border border-card-border rounded-lg p-4 shadow-sm hover:shadow-md hover:bg-card-hover transition-colors cursor-pointer"
       onClick={() => onSelect(fragrance.id)}
     >
       {/* Header */}
       <div className="mb-2">
-        <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 leading-tight">
+        <h4 className="text-sm font-semibold leading-tight text-card-fg">
           {fragrance.brand || fragrance.brandQuery}
         </h4>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+        <h3 className="text-lg font-semibold text-card-fg">
           {fragrance.name || fragrance.nameQuery}
         </h3>
         {fragrance.concentration && (
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-fg-muted">
             {fragrance.concentration} {getQualityDots(fragrance)}
           </p>
         )}
@@ -41,26 +40,26 @@ export function FragranceCard({ fragrance, onSelect }: CardProps) {
 
       {fragrance.season && (
         <div className="mb-2">
-          <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Saison</div>
+          <div className="text-xs text-fg-muted mb-1">Saison</div>
           <SeasonBar map={fragrance.season} />
         </div>
       )}
 
       {fragrance.occasion && (
         <div className="mb-2">
-          <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Anlass</div>
+          <div className="text-xs text-fg-muted mb-1">Anlass</div>
           <OccasionBar map={fragrance.occasion} />
         </div>
       )}
 
       <div className="mb-2">
-        <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Community-Wertung</div>
+        <div className="text-xs text-fg-muted mb-1">Community-Wertung</div>
         <CommunityRatings fragrance={fragrance} />
       </div>
 
       <div className="mb-2">
-        <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Persönliche Wertung</div>
-        <RatingBar label="❤️️" value={fragrance.rating ? Math.round(fragrance.rating * 100) : undefined} className={styles.root} classNames={{ track: "bg-[var(--rating-track)]", fill: "bg-[var(--rating-fill)]" }} />
+        <div className="text-xs text-fg-muted mb-1">Persönliche Wertung</div>
+        <RatingBar label="❤️️" value={fragrance.rating ? Math.round(fragrance.rating * 100) : undefined} classNames={{ track: "bg-meter-rating-track", fill: "bg-meter-rating-fill" }} />
       </div>
     </div>
   );
