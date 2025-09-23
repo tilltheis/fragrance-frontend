@@ -29,11 +29,9 @@ export function FragranceCard({ fragrance, onSelect }: CardProps) {
         <h3 className="text-lg font-semibold text-card-fg">
           {fragrance.name || fragrance.nameQuery}
         </h3>
-        {fragrance.concentration && (
           <p className="text-sm text-fg-muted">
-            {fragrance.concentration} {getQualityDots(fragrance)}
+            {fragrance.concentration ?? ""} {getQualityDots(fragrance)}
           </p>
-        )}
       </div>
 
       {fragrance.type && <TypeChips typeMap={fragrance.type} />}
