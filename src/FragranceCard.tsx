@@ -2,6 +2,7 @@ import { TypeChips } from './TypeChips';
 import { SeasonBar } from './SeasonBar';
 import { OccasionBar } from './OccasionBar';
 import type { Fragrance } from './types';
+import { CommunityRatings } from './CommunityRatings';
 
 interface CardProps {
   fragrance: Fragrance;
@@ -50,25 +51,9 @@ export function FragranceCard({ fragrance, onSelect }: CardProps) {
         </div>
       )}
 
-      {/* Stats */}
-      <div className="flex justify-between items-center text-sm">
-        <div className="flex gap-3">
-          {fragrance.scent && (
-            <span className="text-gray-600 dark:text-gray-400">
-              👃 {fragrance.scent.median}%
-            </span>
-          )}
-          {fragrance.longevity && (
-            <span className="text-gray-600 dark:text-gray-400">
-              ⏳ {fragrance.longevity.median}%
-            </span>
-          )}
-          {fragrance.sillage && (
-            <span className="text-gray-600 dark:text-gray-400">
-              🌬️ {fragrance.sillage.median}%
-            </span>
-          )}
-        </div>
+      <div className="mb-2">
+        <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Community-Wertung</div>
+        <CommunityRatings fragrance={fragrance} />
       </div>
 
 
