@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   /* ========= Foundations ========= */
   --color-bg-surface: hsl(210 20% 98%);             /* page */
@@ -168,167 +170,170 @@
   --color-scrollbar-track: hsl(220 16% 92%);
   --color-scrollbar-thumb: hsl(220 10% 68% / 0.8);
 }
+@layer theme {
+  :root, :host {
+    @variant dark {
+      /* ========= Foundations (dark) ========= */
+      --color-bg-surface: hsl(220 12% 10%);
+      --color-bg-surface-alt: hsl(220 10% 12%);
+      --color-bg-raised: hsl(220 12% 14%);
+      --color-fg-base: hsl(0 0% 98%);
+      --color-fg-muted: hsl(220 15% 72%);
+      --color-fg-inverted: hsl(220 15% 10%);
+      --color-fg-disabled: hsl(220 10% 56%);
+      --color-border-base: hsl(220 10% 26%);
+      --color-border-subtle: hsl(220 10% 20%);
+      --color-brand-primary: hsl(221 83% 66%);
+      --color-brand-secondary: hsl(255 85% 72%);
+      --color-accent-primary: var(--color-brand-primary);
+      --color-focus-ring: var(--color-brand-primary);
+      --color-overlay-scrim: hsl(220 10% 0% / 0.7);
+      --color-selection-bg: hsl(221 83% 66% / 0.28);
+      --color-selection-fg: var(--color-fg-base);
 
-[data-theme="dark"] {
-  /* ========= Foundations (dark) ========= */
-  --color-bg-surface: hsl(220 12% 10%);
-  --color-bg-surface-alt: hsl(220 10% 12%);
-  --color-bg-raised: hsl(220 12% 14%);
-  --color-fg-base: hsl(0 0% 98%);
-  --color-fg-muted: hsl(220 15% 72%);
-  --color-fg-inverted: hsl(220 15% 10%);
-  --color-fg-disabled: hsl(220 10% 56%);
-  --color-border-base: hsl(220 10% 26%);
-  --color-border-subtle: hsl(220 10% 20%);
-  --color-brand-primary: hsl(221 83% 66%);
-  --color-brand-secondary: hsl(255 85% 72%);
-  --color-accent-primary: var(--color-brand-primary);
-  --color-focus-ring: var(--color-brand-primary);
-  --color-overlay-scrim: hsl(220 10% 0% / 0.7);
-  --color-selection-bg: hsl(221 83% 66% / 0.28);
-  --color-selection-fg: var(--color-fg-base);
+      /* ========= Navigation & Toolbar (dark) ========= */
+      --color-nav-bg: var(--color-bg-surface);
+      --color-nav-fg: var(--color-fg-base);
+      --color-nav-active: var(--color-brand-primary);
+      --color-nav-hover: hsl(221 83% 66% / 0.12);
+      --color-toolbar-bg: var(--color-bg-surface);
+      --color-toolbar-fg: var(--color-fg-base);
+      --color-toolbar-border: var(--color-border-base);
 
-  /* ========= Navigation & Toolbar (dark) ========= */
-  --color-nav-bg: var(--color-bg-surface);
-  --color-nav-fg: var(--color-fg-base);
-  --color-nav-active: var(--color-brand-primary);
-  --color-nav-hover: hsl(221 83% 66% / 0.12);
-  --color-toolbar-bg: var(--color-bg-surface);
-  --color-toolbar-fg: var(--color-fg-base);
-  --color-toolbar-border: var(--color-border-base);
+      /* ========= Cards & Tables (dark) ========= */
+      --color-card-bg: var(--color-bg-raised);
+      --color-card-fg: var(--color-fg-base);
+      --color-card-border: var(--color-border-base);
+      --color-card-hover: hsl(0 0% 100% / 0.05);
+      --color-table-header-bg: hsl(220 10% 14%);
+      --color-table-header-fg: var(--color-fg-base);
+      --color-table-row-hover: hsl(0 0% 100% / 0.04);
+      --color-table-row-selected: hsl(221 83% 66% / 0.16);
 
-  /* ========= Cards & Tables (dark) ========= */
-  --color-card-bg: var(--color-bg-raised);
-  --color-card-fg: var(--color-fg-base);
-  --color-card-border: var(--color-border-base);
-  --color-card-hover: hsl(0 0% 100% / 0.05);
-  --color-table-header-bg: hsl(220 10% 14%);
-  --color-table-header-fg: var(--color-fg-base);
-  --color-table-row-hover: hsl(0 0% 100% / 0.04);
-  --color-table-row-selected: hsl(221 83% 66% / 0.16);
+      /* ========= Inputs & Controls (dark) ========= */
+      --color-input-bg: hsl(220 10% 14%);
+      --color-input-fg: var(--color-fg-base);
+      --color-input-border: var(--color-border-base);
+      --color-input-placeholder: hsl(220 10% 60%);
+      --color-input-focus: var(--color-focus-ring);
+      --color-dropdown-bg: hsl(220 10% 14%);
+      --color-dropdown-fg: var(--color-fg-base);
+      --color-dropdown-border: var(--color-border-base);
+      --color-dropdown-hover: hsl(0 0% 100% / 0.05);
+      --color-chip-bg: hsl(220 12% 18%);
+      --color-chip-fg: var(--color-fg-base);
+      --color-chip-border: hsl(220 10% 28%);
+      --color-chip-bg-alt: hsl(220 12% 20%);
+      --color-toggle-on: var(--color-brand-primary);
+      --color-toggle-off: hsl(220 10% 35%);
+      --color-toggle-handle: hsl(0 0% 100%);
+      --color-slider-track: hsl(220 12% 22%);
+      --color-slider-fill: var(--color-accent-primary);
+      --color-slider-thumb: var(--color-bg-raised);
 
-  /* ========= Inputs & Controls (dark) ========= */
-  --color-input-bg: hsl(220 10% 14%);
-  --color-input-fg: var(--color-fg-base);
-  --color-input-border: var(--color-border-base);
-  --color-input-placeholder: hsl(220 10% 60%);
-  --color-input-focus: var(--color-focus-ring);
-  --color-dropdown-bg: hsl(220 10% 14%);
-  --color-dropdown-fg: var(--color-fg-base);
-  --color-dropdown-border: var(--color-border-base);
-  --color-dropdown-hover: hsl(0 0% 100% / 0.05);
-  --color-chip-bg: hsl(220 12% 18%);
-  --color-chip-fg: var(--color-fg-base);
-  --color-chip-border: hsl(220 10% 28%);
-  --color-chip-bg-alt: hsl(220 12% 20%);
-  --color-toggle-on: var(--color-brand-primary);
-  --color-toggle-off: hsl(220 10% 35%);
-  --color-toggle-handle: hsl(0 0% 100%);
-  --color-slider-track: hsl(220 12% 22%);
-  --color-slider-fill: var(--color-accent-primary);
-  --color-slider-thumb: var(--color-bg-raised);
+      /* ========= Filter & Search (dark) ========= */
+      --color-filter-pill-bg: hsl(221 83% 66% / 0.16);
+      --color-filter-pill-fg: var(--color-fg-base);
+      --color-filter-pill-border: hsl(221 83% 66% / 0.30);
+      --color-autocomplete-item-hover: hsl(0 0% 100% / 0.06);
+      --color-autocomplete-highlight: hsl(45 100% 55%);
 
-  /* ========= Filter & Search (dark) ========= */
-  --color-filter-pill-bg: hsl(221 83% 66% / 0.16);
-  --color-filter-pill-fg: var(--color-fg-base);
-  --color-filter-pill-border: hsl(221 83% 66% / 0.30);
-  --color-autocomplete-item-hover: hsl(0 0% 100% / 0.06);
-  --color-autocomplete-highlight: hsl(45 100% 55%);
+      /* ========= Status (dark) ========= */
+      --color-status-success-bg: hsl(152 40% 14%);
+      --color-status-success-fg: hsl(152 60% 74%);
+      --color-status-success-border: hsl(152 35% 30%);
+      --color-status-warning-bg: hsl(40 60% 14%);
+      --color-status-warning-fg: hsl(40 90% 70%);
+      --color-status-warning-border: hsl(40 50% 32%);
+      --color-status-error-bg: hsl(0 55% 14%);
+      --color-status-error-fg: hsl(0 85% 72%);
+      --color-status-error-border: hsl(0 50% 32%);
+      --color-status-info-bg: hsl(210 55% 14%);
+      --color-status-info-fg: hsl(205 90% 75%);
+      --color-status-info-border: hsl(210 45% 32%);
 
-  /* ========= Status (dark) ========= */
-  --color-status-success-bg: hsl(152 40% 14%);
-  --color-status-success-fg: hsl(152 60% 74%);
-  --color-status-success-border: hsl(152 35% 30%);
-  --color-status-warning-bg: hsl(40 60% 14%);
-  --color-status-warning-fg: hsl(40 90% 70%);
-  --color-status-warning-border: hsl(40 50% 32%);
-  --color-status-error-bg: hsl(0 55% 14%);
-  --color-status-error-fg: hsl(0 85% 72%);
-  --color-status-error-border: hsl(0 50% 32%);
-  --color-status-info-bg: hsl(210 55% 14%);
-  --color-status-info-fg: hsl(205 90% 75%);
-  --color-status-info-border: hsl(210 45% 32%);
+      /* ========= Data-viz: Meters (dark) ========= */
+      --color-meter-scent-track: hsl(205 60% 18%);
+      --color-meter-scent-fill:  hsl(205 90% 60%);
+      --color-meter-longevity-track: hsl(152 32% 18%);
+      --color-meter-longevity-fill:  hsl(152 50% 58%);
+      --color-meter-sillage-track: hsl(35 50% 18%);
+      --color-meter-sillage-fill:  hsl(37 90% 60%);
+      --color-meter-rating-track: hsl(0 70% 14%);
+      --color-meter-rating-fill:  hsl(0 72% 52%);
+      --color-fg-on-meter: hsl(0 0% 100%);
 
-  /* ========= Data-viz: Meters (dark) ========= */
-  --color-meter-scent-track: hsl(205 60% 18%);
-  --color-meter-scent-fill:  hsl(205 90% 60%);
-  --color-meter-longevity-track: hsl(152 32% 18%);
-  --color-meter-longevity-fill:  hsl(152 50% 58%);
-  --color-meter-sillage-track: hsl(35 50% 18%);
-  --color-meter-sillage-fill:  hsl(37 90% 60%);
-  --color-meter-rating-track: hsl(0 70% 14%);
-  --color-meter-rating-fill:  hsl(0 72% 52%);
-  --color-fg-on-meter: hsl(0 0% 100%);
+      /* ========= Stacked bars (dark) ========= */
+      --color-stack-season-spring: hsl(152 50% 58%);
+      --color-stack-season-summer: hsl(48 100% 58%);
+      --color-stack-season-autumn: hsl(25 90% 60%);
+      --color-stack-season-winter: hsl(205 90% 62%);
+      --color-stack-occasion-daily: hsl(220 10% 70%);
+      --color-stack-occasion-sport: hsl(152 50% 58%);
+      --color-stack-occasion-leisure: hsl(221 83% 66%);
+      --color-stack-occasion-outing: hsl(320 75% 68%);
+      --color-stack-occasion-work: hsl(255 85% 72%);
+      --color-stack-occasion-evening: hsl(40 100% 62%);
+      --color-stack-separator: hsl(0 0% 0% / 0.85);
 
-  /* ========= Stacked bars (dark) ========= */
-  --color-stack-season-spring: hsl(152 50% 58%);
-  --color-stack-season-summer: hsl(48 100% 58%);
-  --color-stack-season-autumn: hsl(25 90% 60%);
-  --color-stack-season-winter: hsl(205 90% 62%);
-  --color-stack-occasion-daily: hsl(220 10% 70%);
-  --color-stack-occasion-sport: hsl(152 50% 58%);
-  --color-stack-occasion-leisure: hsl(221 83% 66%);
-  --color-stack-occasion-outing: hsl(320 75% 68%);
-  --color-stack-occasion-work: hsl(255 85% 72%);
-  --color-stack-occasion-evening: hsl(40 100% 62%);
-  --color-stack-separator: hsl(0 0% 0% / 0.85);
+      /* ========= Charts (dark) ========= */
+      --color-chart-bar-fill: hsl(220 12% 72%);
+      --color-chart-bar-hover: hsl(220 12% 82%);
+      --color-chart-grid: hsl(220 10% 24%);
+      --color-chart-median-line: hsl(0 0% 100%);
+      --color-chart-iqr-fill: hsl(220 12% 72% / 0.22);
 
-  /* ========= Charts (dark) ========= */
-  --color-chart-bar-fill: hsl(220 12% 72%);
-  --color-chart-bar-hover: hsl(220 12% 82%);
-  --color-chart-grid: hsl(220 10% 24%);
-  --color-chart-median-line: hsl(0 0% 100%);
-  --color-chart-iqr-fill: hsl(220 12% 72% / 0.22);
+      /* ========= Quality indicator (dark) ========= */
+      --color-quality-low: hsl(0 85% 66%);
+      --color-quality-mid: hsl(37 90% 62%);
+      --color-quality-high: hsl(152 55% 62%);
+      --color-quality-unknown: hsl(220 10% 70%);
 
-  /* ========= Quality indicator (dark) ========= */
-  --color-quality-low: hsl(0 85% 66%);
-  --color-quality-mid: hsl(37 90% 62%);
-  --color-quality-high: hsl(152 55% 62%);
-  --color-quality-unknown: hsl(220 10% 70%);
+      /* ========= Domain badges (dark) ========= */
+      --color-owned-bg: hsl(152 40% 18%);
+      --color-owned-fg: hsl(152 60% 74%);
+      --color-seller-bg: hsl(221 83% 66% / 0.16);
+      --color-seller-fg: var(--color-fg-base);
+      --color-seller-border: hsl(221 83% 66% / 0.30);
+      --color-rating-label-fg: var(--color-fg-base);
 
-  /* ========= Domain badges (dark) ========= */
-  --color-owned-bg: hsl(152 40% 18%);
-  --color-owned-fg: hsl(152 60% 74%);
-  --color-seller-bg: hsl(221 83% 66% / 0.16);
-  --color-seller-fg: var(--color-fg-base);
-  --color-seller-border: hsl(221 83% 66% / 0.30);
-  --color-rating-label-fg: var(--color-fg-base);
+      /* ========= Scent type chips (dark) ========= */
+      --color-type-animalic-bg: hsl(18 25% 18%);  --color-type-animalic-fg: hsl(18 25% 88%);  --color-type-animalic-border: hsl(18 20% 30%);
+      --color-type-aquatic-bg:  hsl(215 45% 16%); --color-type-aquatic-fg:  hsl(205 80% 90%); --color-type-aquatic-border:  hsl(215 35% 28%);
+      --color-type-floral-bg:   hsl(330 35% 16%); --color-type-floral-fg:   hsl(330 70% 90%); --color-type-floral-border:   hsl(330 28% 28%);
+      --color-type-chypre-bg:   hsl(100 20% 16%); --color-type-chypre-fg:   hsl(100 40% 86%); --color-type-chypre-border:   hsl(100 18% 28%);
+      --color-type-creamy-bg:   hsl(35 35% 16%);  --color-type-creamy-fg:   hsl(35 60% 88%);  --color-type-creamy-border:   hsl(35 28% 28%);
+      --color-type-earthy-bg:   hsl(60 12% 16%);  --color-type-earthy-fg:   hsl(60 20% 86%);  --color-type-earthy-border:   hsl(60 10% 28%);
+      --color-type-fougere-bg:  hsl(150 16% 16%); --color-type-fougere-fg:  hsl(150 30% 86%); --color-type-fougere-border:  hsl(150 14% 28%);
+      --color-type-fresh-bg:    hsl(190 30% 16%); --color-type-fresh-fg:    hsl(190 50% 90%); --color-type-fresh-border:    hsl(190 25% 28%);
+      --color-type-fruity-bg:   hsl(12 35% 16%);  --color-type-fruity-fg:   hsl(12 70% 88%);  --color-type-fruity-border:   hsl(12 28% 28%);
+      --color-type-gourmand-bg: hsl(20 30% 16%);  --color-type-gourmand-fg: hsl(20 50% 88%);  --color-type-gourmand-border: hsl(20 25% 28%);
+      --color-type-green-bg:    hsl(120 18% 16%); --color-type-green-fg:    hsl(120 30% 88%); --color-type-green-border:    hsl(120 16% 28%);
+      --color-type-resinous-bg: hsl(35 30% 16%);  --color-type-resinous-fg: hsl(35 55% 88%);  --color-type-resinous-border: hsl(35 25% 28%);
+      --color-type-woody-bg:    hsl(30 22% 16%);  --color-type-woody-fg:    hsl(30 30% 88%);  --color-type-woody-border:    hsl(30 20% 28%);
+      --color-type-leathery-bg: hsl(28 26% 16%);  --color-type-leathery-fg: hsl(28 40% 88%);  --color-type-leathery-border: hsl(28 22% 28%);
+      --color-type-amber-bg:    hsl(38 35% 16%);  --color-type-amber-fg:    hsl(36 60% 90%);  --color-type-amber-border:    hsl(38 28% 28%);
+      --color-type-powdery-bg:  hsl(260 22% 16%); --color-type-powdery-fg:  hsl(260 40% 88%); --color-type-powdery-border:  hsl(260 18% 28%);
+      --color-type-smoky-bg:    hsl(220 10% 16%); --color-type-smoky-fg:    hsl(220 10% 86%); --color-type-smoky-border:    hsl(220 10% 28%);
+      --color-type-synthetic-bg:hsl(250 14% 16%); --color-type-synthetic-fg:hsl(250 30% 88%); --color-type-synthetic-border:hsl(250 12% 28%);
+      --color-type-sweet-bg:    hsl(330 35% 16%); --color-type-sweet-fg:    hsl(330 70% 90%); --color-type-sweet-border:    hsl(330 28% 28%);
+      --color-type-spicy-bg:    hsl(16 35% 16%);  --color-type-spicy-fg:    hsl(16 70% 88%);  --color-type-spicy-border:    hsl(16 28% 28%);
+      --color-type-citrus-bg:   hsl(48 35% 16%);  --color-type-citrus-fg:   hsl(48 80% 90%);  --color-type-citrus-border:   hsl(48 28% 28%);
 
-  /* ========= Scent type chips (dark) ========= */
-  --color-type-animalic-bg: hsl(18 25% 18%);  --color-type-animalic-fg: hsl(18 25% 88%);  --color-type-animalic-border: hsl(18 20% 30%);
-  --color-type-aquatic-bg:  hsl(215 45% 16%); --color-type-aquatic-fg:  hsl(205 80% 90%); --color-type-aquatic-border:  hsl(215 35% 28%);
-  --color-type-floral-bg:   hsl(330 35% 16%); --color-type-floral-fg:   hsl(330 70% 90%); --color-type-floral-border:   hsl(330 28% 28%);
-  --color-type-chypre-bg:   hsl(100 20% 16%); --color-type-chypre-fg:   hsl(100 40% 86%); --color-type-chypre-border:   hsl(100 18% 28%);
-  --color-type-creamy-bg:   hsl(35 35% 16%);  --color-type-creamy-fg:   hsl(35 60% 88%);  --color-type-creamy-border:   hsl(35 28% 28%);
-  --color-type-earthy-bg:   hsl(60 12% 16%);  --color-type-earthy-fg:   hsl(60 20% 86%);  --color-type-earthy-border:   hsl(60 10% 28%);
-  --color-type-fougere-bg:  hsl(150 16% 16%); --color-type-fougere-fg:  hsl(150 30% 86%); --color-type-fougere-border:  hsl(150 14% 28%);
-  --color-type-fresh-bg:    hsl(190 30% 16%); --color-type-fresh-fg:    hsl(190 50% 90%); --color-type-fresh-border:    hsl(190 25% 28%);
-  --color-type-fruity-bg:   hsl(12 35% 16%);  --color-type-fruity-fg:   hsl(12 70% 88%);  --color-type-fruity-border:   hsl(12 28% 28%);
-  --color-type-gourmand-bg: hsl(20 30% 16%);  --color-type-gourmand-fg: hsl(20 50% 88%);  --color-type-gourmand-border: hsl(20 25% 28%);
-  --color-type-green-bg:    hsl(120 18% 16%); --color-type-green-fg:    hsl(120 30% 88%); --color-type-green-border:    hsl(120 16% 28%);
-  --color-type-resinous-bg: hsl(35 30% 16%);  --color-type-resinous-fg: hsl(35 55% 88%);  --color-type-resinous-border: hsl(35 25% 28%);
-  --color-type-woody-bg:    hsl(30 22% 16%);  --color-type-woody-fg:    hsl(30 30% 88%);  --color-type-woody-border:    hsl(30 20% 28%);
-  --color-type-leathery-bg: hsl(28 26% 16%);  --color-type-leathery-fg: hsl(28 40% 88%);  --color-type-leathery-border: hsl(28 22% 28%);
-  --color-type-amber-bg:    hsl(38 35% 16%);  --color-type-amber-fg:    hsl(36 60% 90%);  --color-type-amber-border:    hsl(38 28% 28%);
-  --color-type-powdery-bg:  hsl(260 22% 16%); --color-type-powdery-fg:  hsl(260 40% 88%); --color-type-powdery-border:  hsl(260 18% 28%);
-  --color-type-smoky-bg:    hsl(220 10% 16%); --color-type-smoky-fg:    hsl(220 10% 86%); --color-type-smoky-border:    hsl(220 10% 28%);
-  --color-type-synthetic-bg:hsl(250 14% 16%); --color-type-synthetic-fg:hsl(250 30% 88%); --color-type-synthetic-border:hsl(250 12% 28%);
-  --color-type-sweet-bg:    hsl(330 35% 16%); --color-type-sweet-fg:    hsl(330 70% 90%); --color-type-sweet-border:    hsl(330 28% 28%);
-  --color-type-spicy-bg:    hsl(16 35% 16%);  --color-type-spicy-fg:    hsl(16 70% 88%);  --color-type-spicy-border:    hsl(16 28% 28%);
-  --color-type-citrus-bg:   hsl(48 35% 16%);  --color-type-citrus-fg:   hsl(48 80% 90%);  --color-type-citrus-border:   hsl(48 28% 28%);
+      /* ========= Notes (dark) ========= */
+      --color-note-head-bg: hsl(200 15% 16%);  --color-note-head-fg: hsl(200 25% 92%);  --color-note-head-border: hsl(200 12% 28%);
+      --color-note-heart-bg:hsl(330 20% 16%);  --color-note-heart-fg:hsl(330 30% 92%);  --color-note-heart-border:hsl(330 16% 28%);
+      --color-note-base-bg: hsl(35 20% 16%);   --color-note-base-fg: hsl(35 30% 92%);   --color-note-base-border: hsl(35 16% 28%);
 
-  /* ========= Notes (dark) ========= */
-  --color-note-head-bg: hsl(200 15% 16%);  --color-note-head-fg: hsl(200 25% 92%);  --color-note-head-border: hsl(200 12% 28%);
-  --color-note-heart-bg:hsl(330 20% 16%);  --color-note-heart-fg:hsl(330 30% 92%);  --color-note-heart-border:hsl(330 16% 28%);
-  --color-note-base-bg: hsl(35 20% 16%);   --color-note-base-fg: hsl(35 30% 92%);   --color-note-base-border: hsl(35 16% 28%);
+      /* ========= State tints (dark) ========= */
+      --color-state-hover: hsl(0 0% 100% / 0.06);
+      --color-state-active: hsl(221 83% 66% / 0.14);
+      --color-state-selected: hsl(221 83% 66% / 0.20);
 
-  /* ========= State tints (dark) ========= */
-  --color-state-hover: hsl(0 0% 100% / 0.06);
-  --color-state-active: hsl(221 83% 66% / 0.14);
-  --color-state-selected: hsl(221 83% 66% / 0.20);
-
-  /* ========= Utilities (dark) ========= */
-  --color-skeleton-base: hsl(220 10% 18%);
-  --color-scrollbar-track: hsl(220 10% 14%);
-  --color-scrollbar-thumb: hsl(0 0% 100% / 0.25);
+      /* ========= Utilities (dark) ========= */
+      --color-skeleton-base: hsl(220 10% 18%);
+      --color-scrollbar-track: hsl(220 10% 14%);
+      --color-scrollbar-thumb: hsl(0 0% 100% / 0.25);
+    }
+  }
 }
