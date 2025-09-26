@@ -11,10 +11,9 @@ export function TypeChips({ typeMap = {}, className }: TypeChipsProps) {
   const chips = Object.entries(typeMap)
     .map(([type, count]) => ({ type: type as TypeKey, percentage: (count / total) * 100 }))
     .filter(({ percentage }) => percentage >= 5)
-    .sort((a, b) => b.percentage - a.percentage)
-    .slice(0, 2); // Max 2 chips
+    .sort((a, b) => b.percentage - a.percentage);
   return (
-    <div className={`flex flex-wrap gap-1 h-6.5 ${className}`}>
+    <div className={`flex flex-wrap gap-1 h-6.5 overflow-hidden ${className}`}>
       {chips.map(({ type, percentage }) => (
         <TypeChip key={type} type={type} percentage={percentage} />
       ))}
