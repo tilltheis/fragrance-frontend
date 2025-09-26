@@ -3,11 +3,13 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
+  --color-fg-black: hsl(220 15% 14%);
+
   /* ========= Foundations ========= */
   --color-bg-surface: hsl(210 20% 98%);             /* page */
   --color-bg-surface-alt: hsl(210 16% 96%);         /* alt sections */
   --color-bg-raised: hsl(0 0% 100%);                /* cards/dialogs */
-  --color-fg-base: hsl(220 15% 14%);                /* primary text */
+  --color-fg-base: var(--color-fg-black);           /* primary text */
   --color-fg-muted: hsl(220 9% 36%);                /* secondary text */
   --color-fg-inverted: hsl(0 0% 99%);               /* on dark/accent */
   --color-fg-disabled: hsl(220 8% 60%);             /* disabled text */

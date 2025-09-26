@@ -11,7 +11,6 @@ interface CardProps {
 }
 
 export function FragranceCard({ fragrance, onSelect }: CardProps) {
-  // Quality dots
   const getQualityDots = (fragrance: Fragrance) => {
     return fragrance?.scent?.count ?? 0 >= 100 ? "•••" : fragrance?.scent?.count ?? 0 >= 50 ? "••" : "•";
   };
@@ -34,22 +33,18 @@ export function FragranceCard({ fragrance, onSelect }: CardProps) {
           </p>
       </div>
 
-      {fragrance.type && <TypeChips typeMap={fragrance.type} />}
+      <TypeChips className="mb-2" typeMap={fragrance.type} />
 
-      {fragrance.season && (
-        <div className="mb-2">
-          <div className="text-xs text-fg-muted mb-1">Saison</div>
-          <SeasonBar map={fragrance.season} />
-        </div>
-      )}
+      <div className="mb-2">
+        <div className="text-xs text-fg-muted mb-1">Saison</div>
+        <SeasonBar map={fragrance.season} />
+      </div>
 
-      {fragrance.occasion && (
-        <div className="mb-2">
-          <div className="text-xs text-fg-muted mb-1">Anlass</div>
-          <OccasionBar map={fragrance.occasion} />
-        </div>
-      )}
-
+      <div className="mb-2">
+        <div className="text-xs text-fg-muted mb-1">Anlass</div>
+        <OccasionBar map={fragrance.occasion} />
+      </div>
+      
       <div className="mb-2">
         <div className="text-xs text-fg-muted mb-1">Community-Wertung</div>
         <CommunityRatings fragrance={fragrance} />

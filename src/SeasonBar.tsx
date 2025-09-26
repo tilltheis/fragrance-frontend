@@ -9,7 +9,7 @@ const DISPLAY_DATA = [
 ] as const;
 
 export type SeasonBarProps = {
-  map: SeasonMap;
+  map?: SeasonMap;
 };
 
 export function SeasonBar({ map }: SeasonBarProps) {

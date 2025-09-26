@@ -11,7 +11,7 @@ const DISPLAY_DATA = [
 ] as const;
 
 export type OccasionBarProps = {
-  map: OccasionMap;
+  map?: OccasionMap;
 };
 
 export function OccasionBar({ map }: OccasionBarProps) {

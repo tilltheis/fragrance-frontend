@@ -22,10 +22,10 @@ export function RatingBar({ label, value, className, classNames }: RatingBarProp
         style={{ width, transition: "width 0.3s" }}
       />
       <div
-        className={`absolute inset-0 flex items-center justify-center font-semibold text-xs pointer-events-none ${classNames?.text ?? ''}`}
+        className={`absolute inset-0 flex items-center justify-center font-semibold text-xs text-fg-black pointer-events-none ${classNames?.text ?? ''}`}
       >
-        <span className={`mr-1 [text-shadow:0_1px_2px_#fff,0_0px_2px_#fff] dark:[text-shadow:0_1px_2px_#000,0_0px_2px_#000] ${classNames?.label ?? ''}`}>{label}</span>
-        <span className={`[text-shadow:0_1px_2px_#fff,0_0px_2px_#fff] ${classNames?.value ?? ''}`}>{formattedValue}%</span>
+        <span className={`mr-1 text-shadow-[0_0px_2px_#000,0_1px_2px_#000] ${classNames?.label ?? ''}`}>{label}</span>
+        <span className={`text-shadow-[0_0px_2px_#fff,0_1px_2px_#fff] ${classNames?.value ?? ''}`}>{formattedValue}%</span>
       </div>
     </div>
   );

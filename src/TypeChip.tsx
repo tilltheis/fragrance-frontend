@@ -82,7 +82,7 @@ export function TypeChip({ type, percentage }: TypeChipProps) {
   const tokenBase = TYPE_TOKENS[type];
   return (
     <span
-      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-type-${tokenBase}-bg text-type-${tokenBase}-fg border border-type-${tokenBase}-border`}
+      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-type-${tokenBase}-bg text-type-${tokenBase}-fg border border-type-${tokenBase}-border h-6.5`}
       title={`${TYPE_EMOJIS[type]} ${type}: ${Math.round(percentage)}%`}
     >
       {TYPE_EMOJIS[type]} {type} {ticks}

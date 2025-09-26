@@ -16,23 +16,19 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-bg-surface">
-      {/* Header */}
-      <header className="dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-              Duftsammlung
-            </h1>
-            <AppearanceSelector />
-          </div>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
+    <div className="min-h-screen bg-nav-bg">
+      <header className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-nav-fg">
+            Duftsammlung
+          </h1>
+          <p className="text-fg-muted mt-1">
             {DATA.length} Düfte in der Sammlung
           </p>
         </div>
+        <AppearanceSelector />
       </header>
 
-      {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {DATA.map((fragrance) => (
