@@ -78,7 +78,7 @@ const writtenOutInlineTailwindClassesToGenerateUtilityClassesFor = [
 ];
 
 export function TypeChip({ type, percentage }: TypeChipProps) {
-  const ticks = percentage >= 30 ? '▪▪▪' : percentage >= 20 ? '▪▪' : '▪';
+  const ticks = percentage >= 30 ? '•••' : percentage >= 20 ? '••' : '•';
   const tokenBase = TYPE_TOKENS[type];
   return (
     <span
