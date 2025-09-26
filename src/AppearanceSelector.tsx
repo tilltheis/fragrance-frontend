@@ -45,12 +45,19 @@ export function AppearanceSelector() {
     ['system', '🖥️', 'Systemeinstellung'],
     ['dark', '🌙', 'Dunkles Design']] as const;
 
+  const leftMap = {
+    light: 'left-0',
+    system: 'left-10',
+    dark: 'left-20',
+  }
+
   return (
-    <div className="flex items-center justify-center rounded bg-input-bg bg-toggle-off border-input-border">
+    <div className="flex items-center justify-center rounded bg-toggle-off border-input-border relative">
+      <div className={`w-10 h-8 rounded bg-toggle-on absolute top-0 transition-all ${leftMap[appearance]}`} />
       {appearanceOptions.map(([mode, icon, label]) => (
         <button
           key={mode}
-          className={`px-2 py-1 rounded text-md text-shadow-[0_0px_2px_#000,0_1px_2px_#000] ${appearance === mode ? 'bg-toggle-on' : ''}`}
+          className="w-10 h-8 text-md text-shadow-[0_0px_2px_#000,0_1px_2px_#000] z-1"
           onClick={() => setAppearance(mode)}
           aria-label={label}
         >
