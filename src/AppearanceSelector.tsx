@@ -40,29 +40,23 @@ export function AppearanceSelector() {
     };
   }, [appearance]);
 
+  const appearanceOptions =
+    [['light', '☀️', 'Helles Design'],
+    ['system', '🖥️', 'Systemeinstellung'],
+    ['dark', '🌙', 'Dunkles Design']] as const;
+
   return (
-    <div className="flex gap-2 items-center">
-      <button
-        className={`px-2 py-1 rounded ${appearance === 'light' ? 'bg-gray-200 dark:bg-gray-700 font-bold' : 'bg-gray-100 dark:bg-gray-800'}`}
-        onClick={() => setAppearance('light')}
-        aria-label="Helles Design"
-      >
-        ☀️
-      </button>
-      <button
-        className={`px-2 py-1 rounded ${appearance === 'dark' ? 'bg-gray-700 text-white font-bold' : 'bg-gray-100 dark:bg-gray-800'}`}
-        onClick={() => setAppearance('dark')}
-        aria-label="Dunkles Design"
-      >
-        🌙
-      </button>
-      <button
-        className={`px-2 py-1 rounded ${appearance === 'system' ? 'bg-blue-200 dark:bg-blue-900 font-bold' : 'bg-gray-100 dark:bg-gray-800'}`}
-        onClick={() => setAppearance('system')}
-        aria-label="Systemeinstellung"
-      >
-        🖥️
-      </button>
+    <div className="flex items-center justify-center rounded bg-input-bg bg-toggle-off border-input-border">
+      {appearanceOptions.map(([mode, icon, label]) => (
+        <button
+          key={mode}
+          className={`px-2 py-1 rounded text-md text-shadow-[0_0px_2px_#000,0_1px_2px_#000] ${appearance === mode ? 'bg-toggle-on' : ''}`}
+          onClick={() => setAppearance(mode)}
+          aria-label={label}
+        >
+          {icon}
+        </button>
+      ))}
     </div>
   );
 }
