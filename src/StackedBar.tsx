@@ -11,8 +11,7 @@ export type StackedBarProps<T extends string> = {
   className?: string;
 };
 
-export function StackedBar<T extends string>({ map: maybeMap, orderedDisplayData, className }: StackedBarProps<T>) {
-  const map = maybeMap ?? {};
+export function StackedBar<T extends string>({ map = {}, orderedDisplayData, className }: StackedBarProps<T>) {
   const total = Object.values(map).reduce((sum, count) => sum + count, 0);
   const segments = orderedDisplayData
     .map(({ key, ...rest }) => {

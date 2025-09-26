@@ -12,8 +12,8 @@ interface RatingBarProps {
 }
 
 export function RatingBar({ label, value, className, classNames }: RatingBarProps) {
-  const width = value == null ? 0 : `${value}%`;
-  const formattedValue = value == null ? "—" : value;
+  const width = value === undefined ? 0 : `${value}%`;
+  const formattedValue = value === undefined ? "—" : value;
   return (
     <div className={`flex-1 relative h-5 ${className ?? ''}`}>
       <div className={`absolute inset-0 rounded ${classNames?.track ?? ''}`} />

@@ -51,44 +51,44 @@ export interface Fragrance {
   owned: boolean;
 
   // master data
-  brand: string | null;
-  name: string | null;
-  concentration: string | null; // eg "Eau de Toilette"
+  brand?: string;
+  name?: string;
+  concentration?: string; // eg "Eau de Toilette"
 
   // distributions
-  scent: DistributionStats | null;
-  longevity: DistributionStats | null;
-  sillage: DistributionStats | null;
-  pricing: DistributionStats | null;
+  scent?: DistributionStats;
+  longevity?: DistributionStats;
+  sillage?: DistributionStats;
+  pricing?: DistributionStats;
 
   // classifications
-  season: SeasonMap | null;
-  occasion: OccasionMap | null;
-  type: TypeMap | null;
+  season?: SeasonMap;
+  occasion?: OccasionMap;
+  type?: TypeMap;
 
   // structure & notes
-  notes: Notes | null;
+  notes?: Notes;
 
   // user data
-  rating: number | null; // 0..1
-  reason: string | null;
-  comment: string | null;
-  sellers: string[] | null;
+  rating?: number; // 0..1
+  reason?: string;
+  comment?: string;
+  sellers?: string[];
 
   // timestamps
   createdAt: Date;
-  firstTestedAt: Date | null;
-  updatedAt: Date | null;
+  firstTestedAt?: Date;
+  updatedAt?: Date;
 }
 
 // --- DistributionStats helpers ---
-function parseBucketDistribution(dist: any): BucketDistribution | null {
-  if (!dist || typeof dist !== 'object') return null;
+function parseBucketDistribution(dist: any): BucketDistribution | undefined {
+  if (!dist || typeof dist !== 'object') return undefined;
   const out: BucketDistribution = {};
   for (const k of Object.keys(dist)) {
-    if (!BUCKETS.includes(Number(k) as BucketKey)) return null;
+    if (!BUCKETS.includes(Number(k) as BucketKey)) return undefined;
     const v = dist[k];
-    if (typeof v !== 'number' || !isFinite(v)) return null;
+    if (typeof v !== 'number' || !isFinite(v)) return undefined;
     out[Number(k) as BucketKey] = v;
   }
   return out;
@@ -109,9 +109,9 @@ function getPercentileFromBuckets(d: BucketDistribution, pct: number): number {
   return ordered[ordered.length - 1]?.bucket ?? 0;
 }
 
-function toDistributionStats(dist: any): DistributionStats | null {
+function toDistributionStats(dist: any): DistributionStats | undefined {
   const bucketDistribution = parseBucketDistribution(dist);
-  if (!bucketDistribution) return null;
+  if (!bucketDistribution) return undefined;
   const median = getPercentileFromBuckets(bucketDistribution, 50);
   const p25 = getPercentileFromBuckets(bucketDistribution, 25);
   const p75 = getPercentileFromBuckets(bucketDistribution, 75);
@@ -126,32 +126,27 @@ export function parseFragrance(item: any): Fragrance {
     brandQuery: item.brandQuery,
     nameQuery: item.nameQuery,
     owned: item.owned,
-    brand: item.brand ?? null,
-    name: item.name ?? null,
-    concentration: item.concentration ?? null,
+    brand: item.brand || undefined,
+    name: item.name || undefined,
+    concentration: item.concentration || undefined,
     scent: toDistributionStats(item.scent),
     longevity: toDistributionStats(item.longevity),
     sillage: toDistributionStats(item.sillage),
     pricing: toDistributionStats(item.pricing),
-    season: item.season ?? null,
-    occasion: item.occasion ?? null,
-    type: item.type ?? null,
+    season: item.season || undefined,
+    occasion: item.occasion || undefined,
+    type: item.type || undefined,
     notes: item.structure === "pyramid"
-      ? item.head || item.heart || item.base
-        ? { kind: "pyramid", head: item.head ?? [], heart: item.heart ?? [], base: item.base ?? [] }
-        : null
-      : item.structure === "linear"
-        ? item.notes
-          ? { kind: "linear", notes: item.notes }
-          : null
-        : null,
-    rating: item.rating ?? null,
-    reason: item.reason ?? null,
-    comment: item.comment ?? null,
-    sellers: item.sellers ?? null,
+      ? ((item.head || item.heart || item.base)
+        && { kind: "pyramid", head: item.head ?? [], heart: item.heart ?? [], base: item.base ?? [] })
+      : (item.structure === "linear" && (item.notes && { kind: "linear", notes: item.notes })),
+    rating: item.rating === null ? undefined : item.rating,
+    reason: item.reason || undefined,
+    comment: item.comment || undefined,
+    sellers: item.sellers || undefined,
     createdAt: item.createdAt ? new Date(item.createdAt) : new Date(),
-    firstTestedAt: item.firstTestedAt ? new Date(item.firstTestedAt) : null,
-    updatedAt: item.updatedAt ? new Date(item.updatedAt) : null,
+    firstTestedAt: item.firstTestedAt ? new Date(item.firstTestedAt) : undefined,
+    updatedAt: item.updatedAt ? new Date(item.updatedAt) : undefined,
   };
 }
 

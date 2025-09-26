@@ -6,8 +6,7 @@ export type TypeChipsProps = {
   className?: string;
 };
 
-export function TypeChips({ typeMap: maybeTypeMap, className }: TypeChipsProps) {
-  const typeMap = maybeTypeMap ?? {};
+export function TypeChips({ typeMap = {}, className }: TypeChipsProps) {
   const total = Object.values(typeMap).reduce((sum, count) => sum + count, 0);
   const chips = Object.entries(typeMap)
     .map(([type, count]) => ({ type: type as TypeKey, percentage: (count / total) * 100 }))
