@@ -32,7 +32,7 @@ export function StackedBar<T extends string>({ map = {}, orderedDisplayData, cla
           className={className}
           title={`${label}: ${Math.round(percentage)}%`}
         >
-          <span className="flex items-center justify-center h-full text-xs text-shadow-[0_0px_2px_#000,0_1px_2px_#000]">
+          <span className="flex items-center justify-center h-full text-xs text-fg-on-meter text-shadow-[0_0px_2px_#000,0_1px_2px_#000]">
             {value}
           </span>
         </div>
