@@ -1,31 +1,43 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 
 type Appearance = 'light' | 'dark' | 'system';
 
+const APPEARANCE_KEY = 'appearance-setting';
+
 export function AppearanceSelector() {
-  const [appearance, setAppearance] = useState<Appearance>('system');
-  const [isDark, setIsDark] = useState(false);
+  const getInitialAppearance = (): Appearance => {
+    if (typeof window === 'undefined') return 'system';
+    const stored = window.localStorage.getItem(APPEARANCE_KEY);
+    if (stored === 'light' || stored === 'dark') return stored;
+    return 'system';
+  };
 
-  // Listen to system dark mode changes
+  const [appearance, setAppearance] = useState<Appearance>(getInitialAppearance());
+
   useEffect(() => {
     if (appearance === 'system') {
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      setIsDark(mediaQuery.matches);
-      const handler = (e: MediaQueryListEvent) => setIsDark(e.matches);
-      mediaQuery.addEventListener('change', handler);
-      return () => mediaQuery.removeEventListener('change', handler);
-    }
-  }, [appearance]);
-
-  // Set dark mode based on appearance
-  useEffect(() => {
-    if (appearance === 'system') {
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      setIsDark(mediaQuery.matches);
+      window.localStorage.removeItem(APPEARANCE_KEY);
     } else {
-      setIsDark(appearance === 'dark');
+      window.localStorage.setItem(APPEARANCE_KEY, appearance);
     }
-    document.documentElement.classList.toggle('dark', appearance === 'dark' || (appearance === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches));
+    const isDark = appearance === 'dark' || (appearance === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    document.documentElement.classList.toggle('dark', isDark);
+
+    // Listen for system changes if system mode
+    let mediaQuery: MediaQueryList | null = null;
+    let handler: ((e: MediaQueryListEvent) => void) | null = null;
+    if (appearance === 'system') {
+      mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      handler = (e: MediaQueryListEvent) => {
+        document.documentElement.classList.toggle('dark', e.matches);
+      };
+      mediaQuery.addEventListener('change', handler);
+    }
+    return () => {
+      if (mediaQuery && handler) {
+        mediaQuery.removeEventListener('change', handler);
+      }
+    };
   }, [appearance]);
 
   return (
