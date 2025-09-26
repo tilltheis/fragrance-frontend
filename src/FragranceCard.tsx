@@ -41,10 +41,10 @@ export function FragranceCard({ fragrance, onSelect }: CardProps) {
         <SeasonBar map={fragrance.season} />
       </div>
 
-      {/* <div className="mb-2">
+      <div className="mb-2">
         <div className="text-xs text-fg-muted mb-1">Anlass</div>
         <OccasionBar map={fragrance.occasion} />
-      </div> */}
+      </div>
       
       <div className="mb-2">
         <div className="text-xs text-fg-muted mb-1">Community-Wertung</div>
