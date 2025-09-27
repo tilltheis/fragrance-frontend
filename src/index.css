@@ -89,20 +89,23 @@
 
   /* ===== Meters (progress bars) – light on light with dark text ===== */
   /* Scent (blue) */
-  --color-meter-scent-track:     hsl(205 80% 97%);  /* very light */
-  --color-meter-scent-fill:      hsl(205 95% 62%);  /* mid-light, saturated */
+  --color-meter-scent-track:     hsl(205 35% 93%);
+  --color-meter-scent-fill:      hsl(205 95% 62%);
 
   /* Longevity (green) */
-  --color-meter-longevity-track: hsl(152 55% 97%);
+  --color-meter-longevity-track: hsl(152 32% 93%);
   --color-meter-longevity-fill:  hsl(152 60% 64%);
 
   /* Sillage (amber) */
-  --color-meter-sillage-track:   hsl(40 90% 97%);
+  --color-meter-sillage-track:   hsl(40  40% 93%);
   --color-meter-sillage-fill:    hsl(37 90% 65%);
 
   /* Rating (heart red) */
-  --color-meter-rating-track:    hsl(0 70% 97%);
+  --color-meter-rating-track:    hsl(0   40% 93%);
   --color-meter-rating-fill:     hsl(0 75% 64%);
+
+  /* a firmer, neutral track outline (works for all meters) */
+  --color-meter-track-border:    hsl(220 16% 82%);
 
   /* ===== Stacks – Seasons (segments assume dark text) ===== */
   --color-stack-season-spring:   hsl(152 60% 62%);
@@ -181,6 +184,7 @@
   --color-scrollbar-track: hsl(220 16% 92%);
   --color-scrollbar-thumb: hsl(220 10% 68% / 0.8);
 }
+
 @layer theme {
   :root, :host {
     @variant dark {
@@ -263,42 +267,46 @@
       --color-status-info-fg: hsl(205 90% 75%);
       --color-status-info-border: hsl(210 45% 32%);
 
-  /* one text color for any label on meters/stacks (dark) */
-  --color-fg-on-meter: hsl(0 0% 98%); /* near-white */
+    /* one text color for any label on meters/stacks (dark) */
+      --color-fg-on-meter: hsl(0 0% 98%);
+      /* near-white */
+    
+      /* ===== Meters (progress bars) – dark on dark with light text ===== */
+      /* Scent (blue) */
+      --color-meter-scent-track: hsl(205 40% 8%);
+      --color-meter-scent-fill: hsl(205 85% 30%);
 
-  /* ===== Meters (progress bars) – dark on dark with light text ===== */
-  /* Scent (blue) */
-  --color-meter-scent-track:     hsl(205 50% 10%);  /* very dark */
-  --color-meter-scent-fill:      hsl(205 85% 30%);  /* mid-dark, saturated */
+      /* Longevity (green) */
+      --color-meter-longevity-track: hsl(152 35% 8%);
+      --color-meter-longevity-fill: hsl(152 60% 28%);
+      
+      /* Sillage (amber) */
+      --color-meter-sillage-track: hsl(35 35% 8%);
+      --color-meter-sillage-fill: hsl(37 85% 30%);
+      
+      /* Rating (heart red) */
+      --color-meter-rating-track: hsl(0 35% 8%);
+      --color-meter-rating-fill: hsl(0 75% 30%);
 
-  /* Longevity (green) */
-  --color-meter-longevity-track: hsl(152 30% 10%);
-  --color-meter-longevity-fill:  hsl(152 60% 28%);
+      /* firmer outline against dark cards */
+      --color-meter-track-border:    hsl(220 10% 24%);
 
-  /* Sillage (amber) */
-  --color-meter-sillage-track:   hsl(35 35% 9%);
-  --color-meter-sillage-fill:    hsl(37 85% 30%);
+      /* ===== Stacks – Seasons (segments assume light text) ===== */
+      --color-stack-season-spring:   hsl(152 60% 32%);
+      --color-stack-season-summer:   hsl(45 95% 34%);
+      --color-stack-season-autumn:   hsl(25 90% 34%);
+      --color-stack-season-winter:   hsl(205 85% 36%);
 
-  /* Rating (heart red) */
-  --color-meter-rating-track:    hsl(0 35% 9%);
-  --color-meter-rating-fill:     hsl(0 75% 30%);
+      /* ===== Stacks – Occasions ===== */
+      --color-stack-occasion-daily:   hsl(220 12% 60%);
+      --color-stack-occasion-sport:   hsl(152 60% 32%);
+      --color-stack-occasion-leisure: hsl(221 80% 40%);
+      --color-stack-occasion-outing:  hsl(320 70% 42%);
+      --color-stack-occasion-work:    hsl(255 80% 44%);
+      --color-stack-occasion-evening: hsl(40 90% 40%);
 
-  /* ===== Stacks – Seasons (segments assume light text) ===== */
-  --color-stack-season-spring:   hsl(152 60% 32%);
-  --color-stack-season-summer:   hsl(45 95% 34%);
-  --color-stack-season-autumn:   hsl(25 90% 34%);
-  --color-stack-season-winter:   hsl(205 85% 36%);
-
-  /* ===== Stacks – Occasions ===== */
-  --color-stack-occasion-daily:   hsl(220 12% 60%);
-  --color-stack-occasion-sport:   hsl(152 60% 32%);
-  --color-stack-occasion-leisure: hsl(221 80% 40%);
-  --color-stack-occasion-outing:  hsl(320 70% 42%);
-  --color-stack-occasion-work:    hsl(255 80% 44%);
-  --color-stack-occasion-evening: hsl(40 90% 40%);
-
-  /* optional hairline on dark backgrounds */
-  --color-stack-separator: hsl(0 0% 0% / 0.85);
+      /* optional hairline on dark backgrounds */
+      --color-stack-separator: hsl(0 0% 0% / 0.85);
 
       /* ========= Charts (dark) ========= */
       --color-chart-bar-fill: hsl(220 12% 72%);
