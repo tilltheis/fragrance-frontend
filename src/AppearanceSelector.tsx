@@ -4,7 +4,11 @@ type Appearance = 'light' | 'dark' | 'system';
 
 const APPEARANCE_KEY = 'appearance-setting';
 
-export function AppearanceSelector() {
+type AppearanceSelectorProps = {
+  className?: string;
+};
+
+export function AppearanceSelector({ className }: AppearanceSelectorProps) {
   const getInitialAppearance = (): Appearance => {
     if (typeof window === 'undefined') return 'system';
     const stored = window.localStorage.getItem(APPEARANCE_KEY);
@@ -52,7 +56,7 @@ export function AppearanceSelector() {
   }
 
   return (
-    <div className="flex items-center justify-center rounded bg-toggle-off border-input-border relative">
+    <div className={`flex items-center justify-center rounded bg-toggle-off border-input-border relative ${className ?? ''}`}>
       <div className={`w-10 h-8 rounded bg-toggle-on absolute top-0 transition-all ${leftMap[appearance]}`} />
       {appearanceOptions.map(([mode, icon, label]) => (
         <button
@@ -60,6 +64,7 @@ export function AppearanceSelector() {
           className="w-10 h-8 text-md text-shadow-[0_0px_2px_#000,0_1px_2px_#000] z-1"
           onClick={() => setAppearance(mode)}
           aria-label={label}
+          title={label}
         >
           {icon}
         </button>

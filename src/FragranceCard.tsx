@@ -1,18 +1,85 @@
 import { TypeChips } from './TypeChips';
 import { SeasonBar } from './SeasonBar';
 import { OccasionBar } from './OccasionBar';
-import type { Fragrance } from './types';
+import type { Fragrance, LinearNotes, Notes, PyramidNotes } from './types';
 import { CommunityRatings } from './CommunityRatings';
 import { RatingBar } from './RatingBar';
 
+export type FragranceCardMode = 'communityStats' | 'scentNotes';
+
 interface CardProps {
   fragrance: Fragrance;
+  mode: FragranceCardMode;
   onSelect: (id: number) => void;
 }
 
-export function FragranceCard({ fragrance, onSelect }: CardProps) {
+export function FragranceCard({ fragrance, mode, onSelect }: CardProps) {
   const getQualityDots = (fragrance: Fragrance) => {
     return fragrance?.scent?.count ?? 0 >= 100 ? "•••" : fragrance?.scent?.count ?? 0 >= 50 ? "••" : "•";
+  };
+
+  const CommunityStats = () => (
+    <div>
+      <div className="mb-2">
+        <div className="text-xs text-fg-muted mb-1">Saison</div>
+        <SeasonBar map={fragrance.season} />
+      </div>
+
+      <div className="mb-2">
+        <div className="text-xs text-fg-muted mb-1">Anlass</div>
+        <OccasionBar map={fragrance.occasion} />
+      </div>
+      
+      <div className="mb-2">
+        <div className="text-xs text-fg-muted mb-1">Community-Wertung</div>
+        <CommunityRatings fragrance={fragrance} />
+      </div>
+    </div>
+  );
+
+  const NotesList = ({ notes, className }: { notes: string[], className?: string }) => (
+    <ul title={notes.join(', ')} className={`h-5 overflow-x-clip whitespace-nowrap text-ellipsis ${className ?? ''}`}>
+      {notes.map((note, index) => (
+        <li key={index} className="inline text-sm not-last:after:content-[',\00a0'] after:text-fg-muted">
+          {note}
+        </li>
+      ))}
+    </ul>
+  );
+
+  const PyramidNotesView = (pyramidNotes: PyramidNotes) => (
+    <>
+      <div className="mb-2">
+        <div className="text-xs text-fg-muted mb-1">Kopfnoten</div>
+        <NotesList notes={pyramidNotes.head} />
+      </div>
+      <div className="mb-2">
+        <div className="text-xs text-fg-muted mb-1">Herznoten</div>
+        <NotesList notes={pyramidNotes.heart} />
+      </div>
+      <div className="mb-2">
+        <div className="text-xs text-fg-muted mb-1">Basisnoten</div>
+        <NotesList notes={pyramidNotes.base} />
+      </div>
+    </>
+  );
+
+  const LinearNotesView = (linearNotes: LinearNotes) => (
+    <div className="mb-2 h-34">
+      <div className="text-xs text-fg-muted mb-1">Duftnoten</div>
+      <NotesList notes={linearNotes.notes} className="h-auto whitespace-normal! line-clamp-5" />
+    </div>
+  );
+
+  const NotesView = () => {
+    switch (fragrance.notes?.kind) {
+      case "pyramid":
+        return PyramidNotesView(fragrance.notes);
+      case "linear":
+        return LinearNotesView(fragrance.notes);
+      default:
+        return PyramidNotesView({ kind: "pyramid", head: [], heart: [], base: [] });
+    }
   };
 
   return (
@@ -34,22 +101,7 @@ export function FragranceCard({ fragrance, onSelect }: CardProps) {
       </div>
 
       <TypeChips className="mb-2" typeMap={fragrance.type} />
-
-      {(fragrance.season === null) && console.log("NULL")}
-      <div className="mb-2">
-        <div className="text-xs text-fg-muted mb-1">Saison</div>
-        <SeasonBar map={fragrance.season} />
-      </div>
-
-      <div className="mb-2">
-        <div className="text-xs text-fg-muted mb-1">Anlass</div>
-        <OccasionBar map={fragrance.occasion} />
-      </div>
-      
-      <div className="mb-2">
-        <div className="text-xs text-fg-muted mb-1">Community-Wertung</div>
-        <CommunityRatings fragrance={fragrance} />
-      </div>
+      {mode === 'communityStats' ? <CommunityStats /> : <NotesView />}
 
       <div className="mb-2">
         <div className="text-xs text-fg-muted mb-1">Persönliche Wertung</div>
