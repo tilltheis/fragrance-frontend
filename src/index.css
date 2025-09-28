@@ -1,5 +1,125 @@
 @import "tailwindcss";
 
+@utility global-scroll-lock {
+  --global-scroll-lock: 1;
+}
+
+@utility scroll-lock {
+  @apply overflow-hidden;
+    /* height: 100svh; */
+    /* inset: 0; */
+    -webkit-overflow-scrolling: auto;
+    /* height: 100%; */
+    /* overflow: auto; */
+}
+
+@layer base {
+  /* ---------------- Single Breakpoints ---------------- */
+  /* unprefixed */
+  html:has(.global-scroll-lock),
+  body:has(.global-scroll-lock) { @apply scroll-lock; }
+
+  /* min only */
+  @media (width >= 40rem) { /* sm */
+    html:has(.sm\:global-scroll-lock),
+    body:has(.sm\:global-scroll-lock) { @apply scroll-lock; }
+  }
+  @media (width >= 48rem) { /* md */
+    html:has(.md\:global-scroll-lock),
+    body:has(.md\:global-scroll-lock) { @apply scroll-lock; }
+  }
+  @media (width >= 64rem) { /* lg */
+    html:has(.lg\:global-scroll-lock),
+    body:has(.lg\:global-scroll-lock) { @apply scroll-lock; }
+  }
+  @media (width >= 80rem) { /* xl */
+    html:has(.xl\:global-scroll-lock),
+    body:has(.xl\:global-scroll-lock) { @apply scroll-lock; }
+  }
+  @media (width >= 96rem) { /* 2xl */
+    html:has(.\32 xl\:global-scroll-lock),
+    body:has(.\32 xl\:global-scroll-lock) { @apply scroll-lock; }
+  }
+
+  /* max only */
+  @media (width < 40rem) { /* max-sm */
+    html:has(.max-sm\:global-scroll-lock),
+    body:has(.max-sm\:global-scroll-lock) { @apply scroll-lock; }
+  }
+  @media (width < 48rem) { /* max-md */
+    html:has(.max-md\:global-scroll-lock),
+    body:has(.max-md\:global-scroll-lock) { @apply scroll-lock; }
+  }
+  @media (width < 64rem) { /* max-lg */
+    html:has(.max-lg\:global-scroll-lock),
+    body:has(.max-lg\:global-scroll-lock) { @apply scroll-lock; }
+  }
+  @media (width < 80rem) { /* max-xl */
+    html:has(.max-xl\:global-scroll-lock),
+    body:has(.max-xl\:global-scroll-lock) { @apply scroll-lock; }
+  }
+  @media (width < 96rem) { /* max-2xl */
+    html:has(.max-2xl\:global-scroll-lock),
+    body:has(.max-2xl\:global-scroll-lock) { @apply scroll-lock; }
+  }
+
+  /* ---------------- Range Combos ---------------- */
+  /* sm ≥40 & <48 */
+  @media (width >= 40rem) and (width < 48rem) {
+    html:has(.sm\:max-md\:global-scroll-lock),
+    body:has(.sm\:max-md\:global-scroll-lock) { @apply scroll-lock; }
+  }
+  /* sm ≥40 & <64 */
+  @media (width >= 40rem) and (width < 64rem) {
+    html:has(.sm\:max-lg\:global-scroll-lock),
+    body:has(.sm\:max-lg\:global-scroll-lock) { @apply scroll-lock; }
+  }
+  /* sm ≥40 & <80 */
+  @media (width >= 40rem) and (width < 80rem) {
+    html:has(.sm\:max-xl\:global-scroll-lock),
+    body:has(.sm\:max-xl\:global-scroll-lock) { @apply scroll-lock; }
+  }
+  /* sm ≥40 & <96 */
+  @media (width >= 40rem) and (width < 96rem) {
+    html:has(.sm\:max-2xl\:global-scroll-lock),
+    body:has(.sm\:max-2xl\:global-scroll-lock) { @apply scroll-lock; }
+  }
+
+  /* md ≥48 & <64 */
+  @media (width >= 48rem) and (width < 64rem) {
+    html:has(.md\:max-lg\:global-scroll-lock),
+    body:has(.md\:max-lg\:global-scroll-lock) { @apply scroll-lock; }
+  }
+  /* md ≥48 & <80 */
+  @media (width >= 48rem) and (width < 80rem) {
+    html:has(.md\:max-xl\:global-scroll-lock),
+    body:has(.md\:max-xl\:global-scroll-lock) { @apply scroll-lock; }
+  }
+  /* md ≥48 & <96 */
+  @media (width >= 48rem) and (width < 96rem) {
+    html:has(.md\:max-2xl\:global-scroll-lock),
+    body:has(.md\:max-2xl\:global-scroll-lock) { @apply scroll-lock; }
+  }
+
+  /* lg ≥64 & <80 */
+  @media (width >= 64rem) and (width < 80rem) {
+    html:has(.lg\:max-xl\:global-scroll-lock),
+    body:has(.lg\:max-xl\:global-scroll-lock) { @apply scroll-lock; }
+  }
+  /* lg ≥64 & <96 */
+  @media (width >= 64rem) and (width < 96rem) {
+    html:has(.lg\:max-2xl\:global-scroll-lock),
+    body:has(.lg\:max-2xl\:global-scroll-lock) { @apply scroll-lock; }
+  }
+
+  /* xl ≥80 & <96 */
+  @media (width >= 80rem) and (width < 96rem) {
+    html:has(.xl\:max-2xl\:global-scroll-lock),
+    body:has(.xl\:max-2xl\:global-scroll-lock) { @apply scroll-lock; }
+  }
+}
+
+
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {

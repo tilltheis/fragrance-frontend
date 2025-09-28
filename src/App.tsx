@@ -4,17 +4,16 @@ import { parseFragrance, type Fragrance } from './types';
 import { AppearanceSelector } from './AppearanceSelector';
 import { FragranceCard, type FragranceCardMode } from './FragranceCard';
 import { FragranceCardModeSelector, getInitialFragranceCardMode } from './FragranceCardModeSelector';
+import { FragranceDetailPanel } from './FragranceDetailPanel';
 
 const DATA: Fragrance[] = unparsedFragrances.map(parseFragrance);
 
 export default function App() {
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selectedFragrance, setSelectedFragrance] = useState<Fragrance | undefined>();
   const [cardMode, setCardMode] = useState<FragranceCardMode>(getInitialFragranceCardMode());
 
-  const handleCardSelect = (id: number) => {
-    setSelectedId(id);
-    // TODO: Open detail view
-    console.log('Selected fragrance:', id);
+  const handleCardSelect = (fragrance: Fragrance) => {
+    setSelectedFragrance(fragrance);
   };
 
   return (
@@ -35,14 +34,11 @@ export default function App() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 grid-flow-row-dense">
           {DATA.map((fragrance) => (
-            <FragranceCard
-              mode={cardMode}
-              key={fragrance.id}
-              fragrance={fragrance}
-              onSelect={handleCardSelect}
-            />
+            selectedFragrance?.id === fragrance.id ? (
+              <FragranceDetailPanel key={`fragrance-detail-${selectedFragrance.id}`} fragrance={selectedFragrance} onClose={() => setSelectedFragrance(undefined)} />
+            ) : <FragranceCard mode={cardMode} key={fragrance.id} fragrance={fragrance} onSelect={handleCardSelect} />
           ))}
         </div>
       </main>

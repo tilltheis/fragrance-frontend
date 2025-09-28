@@ -1,7 +1,7 @@
 import { TypeChips } from './TypeChips';
 import { SeasonBar } from './SeasonBar';
 import { OccasionBar } from './OccasionBar';
-import type { Fragrance, LinearNotes, Notes, PyramidNotes } from './types';
+import type { Fragrance, LinearNotes, PyramidNotes } from './types';
 import { CommunityRatings } from './CommunityRatings';
 import { RatingBar } from './RatingBar';
 
@@ -10,7 +10,7 @@ export type FragranceCardMode = 'communityStats' | 'scentNotes';
 interface CardProps {
   fragrance: Fragrance;
   mode: FragranceCardMode;
-  onSelect: (id: number) => void;
+  onSelect: (fragrance: Fragrance) => void;
 }
 
 export function FragranceCard({ fragrance, mode, onSelect }: CardProps) {
@@ -85,7 +85,7 @@ export function FragranceCard({ fragrance, mode, onSelect }: CardProps) {
   return (
     <div
       className="bg-card-bg text-card-fg border border-card-border rounded-lg p-4 shadow-sm hover:shadow-md hover:bg-card-hover transition-colors cursor-pointer"
-      onClick={() => onSelect(fragrance.id)}
+      onClick={() => onSelect(fragrance)}
     >
       {/* Header */}
       <div className="mb-2">
