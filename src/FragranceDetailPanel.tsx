@@ -12,10 +12,6 @@ type FragranceDetailPanelProps = {
 };
 
 export function FragranceDetailPanel({ fragrance, onClose }: FragranceDetailPanelProps) {
-  const getQualityDots = (fragrance: Fragrance) => {
-    return fragrance?.scent?.count ?? 0 >= 100 ? "•••" : fragrance?.scent?.count ?? 0 >= 50 ? "••" : "•";
-  };
-
   const CommunityStats = () => (
     <div>
       <div className="mb-2">
@@ -138,7 +134,7 @@ export function FragranceDetailPanel({ fragrance, onClose }: FragranceDetailPane
               {fragrance.name || fragrance.nameQuery}
             </h3>
             <p className="text-sm text-fg-muted">
-              {fragrance.concentration ?? ""} {getQualityDots(fragrance)}
+              {fragrance.concentration ?? "\u00A0"}
             </p>
           </div>
 
