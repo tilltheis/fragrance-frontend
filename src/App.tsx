@@ -9,12 +9,15 @@ import { FragranceDetailPanel } from './FragranceDetailPanel';
 const DATA: Fragrance[] = unparsedFragrances.map(parseFragrance);
 
 export default function App() {
-  const [selectedFragrance, setSelectedFragrance] = useState<Fragrance | undefined>();
+  const [selectedFragranceId, setSelectedFragranceId] = useState<number | undefined>();
   const [cardMode, setCardMode] = useState<FragranceCardMode>(getInitialFragranceCardMode());
+  const [fragrances, setFragrances] = useState<Record<number, Fragrance>>(
+    () => DATA.reduce((acc, fragrance) => {
+      acc[fragrance.id] = fragrance;
+      return acc;
+    }, {} as Record<number, Fragrance>)
+  );
 
-  const handleCardSelect = (fragrance: Fragrance) => {
-    setSelectedFragrance(fragrance);
-  };
 
   return (
     <div className="min-h-screen bg-nav-bg">
@@ -35,10 +38,27 @@ export default function App() {
 
       <main className="max-w-7xl mx-auto px-4 py-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 grid-flow-row-dense">
-          {DATA.map((fragrance) => (
-            selectedFragrance?.id === fragrance.id ? (
-              <FragranceDetailPanel key={`fragrance-detail-${selectedFragrance.id}`} fragrance={selectedFragrance} onClose={() => setSelectedFragrance(undefined)} />
-            ) : <FragranceCard mode={cardMode} key={fragrance.id} fragrance={fragrance} onSelect={handleCardSelect} />
+          {Object.values(fragrances).map((fragrance) => (
+            selectedFragranceId === fragrance.id ? (
+              <FragranceDetailPanel
+                key={`fragrance-detail-${selectedFragranceId}`}
+                fragrance={fragrance}
+                onClose={() => setSelectedFragranceId(undefined)}
+                onChange={changedFragrance => {
+                  setFragrances(prev => ({
+                    ...prev,
+                    [changedFragrance.id]: changedFragrance
+                  }))
+                }}
+              />
+            ) : (
+              <FragranceCard
+                mode={cardMode}
+                key={fragrance.id}
+                fragrance={fragrance}
+                onSelect={(selectedFragrance) => setSelectedFragranceId(selectedFragrance.id)}
+              />
+            )
           ))}
         </div>
       </main>

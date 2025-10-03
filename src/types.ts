@@ -48,7 +48,6 @@ export interface Fragrance {
   id: number;
   brandQuery: string;
   nameQuery: string;
-  owned: boolean;
 
   // master data
   brand?: string;
@@ -73,7 +72,8 @@ export interface Fragrance {
   rating?: number; // 0..1
   reason?: string;
   comment?: string;
-  sellers?: string[];
+  sellers?: Set<string>;
+  owned?: boolean;
 
   // timestamps
   createdAt: Date;
@@ -125,7 +125,7 @@ export function parseFragrance(item: any): Fragrance {
     id: item.id,
     brandQuery: item.brandQuery,
     nameQuery: item.nameQuery,
-    owned: item.owned,
+    owned: item.owned || undefined,
     brand: item.brand || undefined,
     name: item.name || undefined,
     concentration: item.concentration || undefined,
@@ -143,12 +143,14 @@ export function parseFragrance(item: any): Fragrance {
     rating: item.rating === null ? undefined : item.rating,
     reason: item.reason || undefined,
     comment: item.comment || undefined,
-    sellers: item.sellers || undefined,
+    sellers: item.sellers ? new Set(item.sellers) : undefined,
     createdAt: item.createdAt ? new Date(item.createdAt) : new Date(),
     firstTestedAt: item.firstTestedAt ? new Date(item.firstTestedAt) : undefined,
     updatedAt: item.updatedAt ? new Date(item.updatedAt) : undefined,
   };
 }
+
+export type DynamicFragranceData = Pick<Fragrance, 'rating' | 'reason' | 'comment' | 'sellers' | 'owned' | 'firstTestedAt' | 'updatedAt'>;
 
 export interface ViewState {
   displayMode: 'light' | 'dark' | 'system';

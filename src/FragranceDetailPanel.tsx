@@ -3,15 +3,15 @@ import { SeasonBar } from './SeasonBar';
 import { OccasionBar } from './OccasionBar';
 import type { Fragrance, LinearNotes, PyramidNotes } from './types';
 import { CommunityRatings } from './CommunityRatings';
-import { RatingBar } from './RatingBar';
+import { EditablePersonalRating } from './EditablePersonalRating';
 
 type FragranceDetailPanelProps = {
   fragrance: Fragrance;
   onClose?: () => void;
-  // onChange?: (updates: Fragrance) => void;
+  onChange: (changedFragrance: Fragrance) => void;
 };
 
-export function FragranceDetailPanel({ fragrance, onClose }: FragranceDetailPanelProps) {
+export function FragranceDetailPanel({ fragrance, onClose, onChange }: FragranceDetailPanelProps) {
   const CommunityStats = () => (
     <div>
       <div className="mb-2">
@@ -120,7 +120,7 @@ export function FragranceDetailPanel({ fragrance, onClose }: FragranceDetailPane
       p-4
       shadow-sm
       "
-      
+
           onClick={(e) => e.stopPropagation()}
         >
           <button onClick={onClose} className="absolute top-2 right-2 text-fg-muted hover:text-fg-accent">X</button>
@@ -138,13 +138,18 @@ export function FragranceDetailPanel({ fragrance, onClose }: FragranceDetailPane
             </p>
           </div>
 
-          <TypeChips className="mb-2 h-auto" typeMap={fragrance.type} />
-          <NotesView />
-          <CommunityStats />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <TypeChips className="mb-2 h-auto" typeMap={fragrance.type} />
+              <NotesView />
+              <CommunityStats />
+            </div>
 
-          <div className="mb-2">
-            <div className="text-xs text-fg-muted mb-1">Persönliche Wertung</div>
-            <RatingBar label="❤️️" value={fragrance.rating ? Math.round(fragrance.rating * 100) : undefined} classNames={{ track: "bg-meter-rating-track", fill: "bg-meter-rating-fill" }} />
+            <EditablePersonalRating
+              data={fragrance}
+              sellerOptions={new Set(["Douglas", "Flaconi", "Parfumdreams", "Notino", "Sephora", "Müller", "Rossmann", "dm"])}
+              onChange={(changedDynamicFragranceData) => onChange({ ...fragrance, ...changedDynamicFragranceData })}
+            />
           </div>
         </div>
       </div>
