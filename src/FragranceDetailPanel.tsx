@@ -7,8 +7,8 @@ import { EditablePersonalRating } from './EditablePersonalRating';
 
 type FragranceDetailPanelProps = {
   fragrance: Fragrance;
-  onClose?: () => void;
-  onChange: (changedFragrance: Fragrance) => void;
+  onClose?: (closedFragrance: Fragrance) => void;
+  onChange?: (changedFragrance: Fragrance) => void;
 };
 
 export function FragranceDetailPanel({ fragrance, onClose, onChange }: FragranceDetailPanelProps) {
@@ -93,7 +93,7 @@ export function FragranceDetailPanel({ fragrance, onClose, onChange }: Fragrance
       overflow-scroll
       "
 
-      onClick={onClose}
+      onClick={() => onClose?.(fragrance)}
     >
       <div className="
       landscape:max-md:absolute

@@ -10,7 +10,7 @@ export type FragranceCardMode = 'communityStats' | 'scentNotes';
 interface CardProps {
   fragrance: Fragrance;
   mode: FragranceCardMode;
-  onSelect: (fragrance: Fragrance) => void;
+  onSelect?: (fragrance: Fragrance) => void;
 }
 
 export function FragranceCard({ fragrance, mode, onSelect }: CardProps) {
@@ -81,7 +81,7 @@ export function FragranceCard({ fragrance, mode, onSelect }: CardProps) {
   return (
     <div
       className="bg-card-bg text-card-fg border border-card-border rounded-lg p-4 shadow-sm hover:shadow-md hover:bg-card-hover transition-colors cursor-pointer"
-      onClick={() => onSelect(fragrance)}
+      onClick={() => onSelect?.(fragrance)}
     >
       {/* Header */}
       <div className="mb-2">
