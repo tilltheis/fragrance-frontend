@@ -32,7 +32,7 @@ export function FragranceCardModeSelector({ value, onChange, className }: Fragra
   };
 
   return (
-    <div className={`flex items-center justify-center rounded bg-toggle-off border-input-border relative ${className ?? ''}`}>
+    <div className={`w-30 flex items-center justify-center rounded bg-toggle-off border-input-border relative ${className ?? ''}`}>
       <div className={`w-15 h-8 rounded bg-toggle-on absolute top-0 transition-all ${leftMap[value]}`} />
       {fragranceCardModeOptions.map(([mode, icon, label]) => (
         <button

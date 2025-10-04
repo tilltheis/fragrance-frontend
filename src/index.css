@@ -303,6 +303,52 @@
   --color-skeleton-base: hsl(220 14% 92%);
   --color-scrollbar-track: hsl(220 16% 92%);
   --color-scrollbar-thumb: hsl(220 10% 68% / 0.8);
+
+
+  /* Focus ring shared by buttons/inputs */
+  --color-focus-ring:           hsl(205 100% 56% / 0.65);
+
+  /* -------- Buttons: Primary (accent) -------- */
+  --color-button-primary-fill:  hsl(205 90% 44%);
+  --color-button-primary-hover: hsl(205 90% 40%);
+  --color-button-primary-active:hsl(205 90% 36%);
+  --color-button-primary-fg:    hsl(0 0% 100%);
+  --color-button-primary-border:hsl(205 92% 38%);
+
+  /* -------- Buttons: Secondary (neutral, filled) -------- */
+  --color-button-secondary-fill:   hsl(220 16% 96%);
+  --color-button-secondary-hover:  hsl(220 16% 92%);
+  --color-button-secondary-active: hsl(220 16% 88%);
+  --color-button-secondary-fg:     hsl(222 15% 18%);
+  --color-button-secondary-border: hsl(220 16% 80%);
+
+  /* -------- Buttons: Ghost (quiet) -------- */
+  --color-button-ghost-fill:    transparent;
+  --color-button-ghost-hover:   hsl(220 16% 96%);
+  --color-button-ghost-active:  hsl(220 16% 92%);
+  --color-button-ghost-fg:      hsl(222 15% 30%);
+  --color-button-ghost-border:  transparent;
+
+  /* -------- Buttons: Danger -------- */
+  --color-button-danger-fill:   hsl(0 75% 45%);
+  --color-button-danger-hover:  hsl(0 75% 42%);
+  --color-button-danger-active: hsl(0 75% 38%);
+  --color-button-danger-fg:     hsl(0 0% 100%);
+  --color-button-danger-border: hsl(0 70% 40%);
+
+  /* -------- Buttons: Disabled (all variants) -------- */
+  --color-button-disabled-fill:   hsl(220 12% 94%);
+  --color-button-disabled-fg:     hsl(220 10% 60%);
+  --color-button-disabled-border: hsl(220 12% 88%);
+
+  /* -------- Inputs (text/select/textarea) -------- */
+  --color-input-bg:            hsl(0 0% 100%);
+  --color-input-fg:            hsl(222 15% 15%);
+  --color-input-border:        hsl(220 16% 82%);
+  --color-input-hover-border:  hsl(220 16% 72%);
+  --color-input-focus-border:  hsl(205 90% 50%);
+  --color-input-placeholder:   hsl(220 10% 55%);
+  --color-input-invalid-border:hsl(0 65% 55%);
 }
 
 @layer theme {
@@ -486,6 +532,53 @@
       --color-skeleton-base: hsl(220 10% 18%);
       --color-scrollbar-track: hsl(220 10% 14%);
       --color-scrollbar-thumb: hsl(0 0% 100% / 0.25);
+
+
+      /* Focus ring */
+      --color-focus-ring:           hsl(205 100% 64% / 0.60);
+
+      /* -------- Buttons: Primary -------- */
+      /* Use a lighter fill in dark, with dark text for AA contrast */
+      --color-button-primary-fill:  hsl(205 90% 60%);
+      --color-button-primary-hover: hsl(205 90% 56%);
+      --color-button-primary-active:hsl(205 90% 52%);
+      --color-button-primary-fg:    hsl(222 15% 10%);   /* near-black text for contrast */
+      --color-button-primary-border:hsl(205 70% 45%);
+
+      /* -------- Buttons: Secondary (neutral, filled) -------- */
+      --color-button-secondary-fill:   hsl(222 12% 20%);
+      --color-button-secondary-hover:  hsl(222 12% 24%);
+      --color-button-secondary-active: hsl(222 12% 22%);
+      --color-button-secondary-fg:     hsl(0 0% 100%);
+      --color-button-secondary-border: hsl(222 12% 28%);
+
+      /* -------- Buttons: Ghost -------- */
+      --color-button-ghost-fill:    transparent;
+      --color-button-ghost-hover:   hsl(0 0% 100% / 0.06);
+      --color-button-ghost-active:  hsl(0 0% 100% / 0.10);
+      --color-button-ghost-fg:      hsl(0 0% 100%);
+      --color-button-ghost-border:  transparent;
+
+      /* -------- Buttons: Danger -------- */
+      --color-button-danger-fill:   hsl(0 85% 62%);
+      --color-button-danger-hover:  hsl(0 85% 58%);
+      --color-button-danger-active: hsl(0 85% 54%);
+      --color-button-danger-fg:     hsl(222 15% 10%);   /* dark text for contrast on light red */
+      --color-button-danger-border: hsl(0 70% 48%);
+
+      /* -------- Buttons: Disabled -------- */
+      --color-button-disabled-fill:   hsl(222 12% 16%);
+      --color-button-disabled-fg:     hsl(223 10% 46%);
+      --color-button-disabled-border: hsl(222 12% 18%);
+
+      /* -------- Inputs -------- */
+      --color-input-bg:            hsl(222 12% 16%);
+      --color-input-fg:            hsl(0 0% 100%);
+      --color-input-border:        hsl(222 12% 28%);
+      --color-input-hover-border:  hsl(222 12% 36%);
+      --color-input-focus-border:  hsl(205 90% 60%);
+      --color-input-placeholder:   hsl(0 0% 100% / 0.55);
+      --color-input-invalid-border:hsl(0 70% 52%);
     }
   }
 }

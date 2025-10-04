@@ -56,7 +56,7 @@ export function AppearanceSelector({ className }: AppearanceSelectorProps) {
   }
 
   return (
-    <div className={`flex items-center justify-center rounded bg-toggle-off border-input-border relative ${className ?? ''}`}>
+    <div className={`w-30 flex items-center justify-center rounded bg-toggle-off border-input-border relative ${className ?? ''}`}>
       <div className={`w-10 h-8 rounded bg-toggle-on absolute top-0 transition-all ${leftMap[appearance]}`} />
       {appearanceOptions.map(([mode, icon, label]) => (
         <button
