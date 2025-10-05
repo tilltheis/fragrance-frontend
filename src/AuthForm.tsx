@@ -6,12 +6,13 @@ type LoginFormProps = {
 };
 
 function LoginForm({ auth }: LoginFormProps) {
+  const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [isError, setIsError] = useState<boolean>(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const success = await auth.login({ password });
+    const success = await auth.login({ username, password });
     if (!success) {
       setIsError(true);
     }
@@ -21,6 +22,36 @@ function LoginForm({ auth }: LoginFormProps) {
     <div className="flex flex-col items-center justify-center min-h-screen bg-bg-base">
       <h1 className="text-2xl mb-4 text-fg-base">Login</h1>
       <form className="bg-card-bg p-6 rounded-lg shadow-lg w-80 border border-card-border text-card-fg">
+        <div className="mb-6">
+          <label className="block text-fg-base text-sm font-bold mb-2" htmlFor="username">
+            Username
+          </label>
+          <input
+            className={`
+              text-input-fg
+              bg-input-bg
+              border
+              rounded
+              border-input-border
+              hover:border-input-hover-border
+              w-full
+              py-2
+              px-3
+              text-fg-base
+              leading-tight
+              focus:border-input-focus-border
+              focus:outline-focus-ring
+              focus-visible:ring-2
+              focus-visible:ring-focus-ring
+              focus-visible:ring-offset-1
+              ${isError ? 'border-input-invalid-border' : ''}
+              `}
+            id="username"
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+        </div>
         <div className="mb-6">
           <label className="block text-fg-base text-sm font-bold mb-2" htmlFor="password">
             Password

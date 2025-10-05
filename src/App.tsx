@@ -1,11 +1,11 @@
 import { AuthForm } from "./AuthForm";
-import { useSession } from "./AuthProvider";
-import { FragranceGrid } from "./FragranceGrid";
+import { useAuth } from "./AuthProvider";
+import { LoggedInLayout } from "./LoggedInLayout";
 
 export function App() {
-  const session = useSession()
+  const auth = useAuth();
 
-  if (session) return <FragranceGrid />
+  if (auth.status === "loggedIn") return <LoggedInLayout />
 
   return <AuthForm />
 }

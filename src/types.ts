@@ -81,6 +81,9 @@ export interface Fragrance {
   updatedAt?: Date;
 }
 
+export type StaticFragranceData = Pick<Fragrance, 'id' | 'brand' | 'name' | 'concentration' | 'scent' | 'longevity' | 'sillage' | 'pricing' | 'season' | 'occasion' | 'type' | 'notes'>;
+export type DynamicFragranceData = Pick<Fragrance, 'id' | 'brandQuery' | 'nameQuery' | 'rating' | 'reason' | 'comment' | 'sellers' | 'owned' | 'firstTestedAt' | 'updatedAt'>;
+
 // --- DistributionStats helpers ---
 function parseBucketDistribution(dist: any): BucketDistribution | undefined {
   if (!dist || typeof dist !== 'object') return undefined;
@@ -123,8 +126,8 @@ function toDistributionStats(dist: any): DistributionStats | undefined {
 export function parseFragrance(item: any): Fragrance {
   return {
     id: item.id,
-    brandQuery: item.brandQuery,
-    nameQuery: item.nameQuery,
+    brandQuery: item.brand_query,
+    nameQuery: item.name_query,
     owned: item.owned || undefined,
     brand: item.brand || undefined,
     name: item.name || undefined,
@@ -149,8 +152,6 @@ export function parseFragrance(item: any): Fragrance {
     updatedAt: item.updatedAt ? new Date(item.updatedAt) : undefined,
   };
 }
-
-export type DynamicFragranceData = Pick<Fragrance, 'rating' | 'reason' | 'comment' | 'sellers' | 'owned' | 'firstTestedAt' | 'updatedAt'>;
 
 export interface ViewState {
   displayMode: 'light' | 'dark' | 'system';

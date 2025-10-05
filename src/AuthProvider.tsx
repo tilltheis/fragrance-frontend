@@ -10,12 +10,14 @@ import React, {
 } from "react";
 
 export type Session = {
+  owner: string;
+  repo: string;
   accessToken: string;
 };
 
 export type Auth = LoggedInAuth | LoggedOutAuth;
 export type LoggedInAuth = { status: "loggedIn"; session: Session; logout: () => void }
-export type LoggedOutAuth = { status: "loggedOut"; login: ({ password }: { password: string }) => Promise<boolean> }
+export type LoggedOutAuth = { status: "loggedOut"; login: ({ username, password }: { username: string; password: string }) => Promise<boolean> }
 
 
 type AuthState =
@@ -46,7 +48,7 @@ function saveSession(s: Session | null) {
 type Ctx = {
   auth: AuthState;
   // Actions exist, but `useAuth()` will expose only legal ones per state
-  login: ({ password }: { password: string }) => Promise<boolean>;
+  login: ({ username, password }: { username: string; password: string }) => Promise<boolean>;
   logout: () => void;
 };
 
@@ -60,14 +62,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return session ? { status: "loggedIn", session } : { status: "loggedOut" };
   });
 
-  const login = useCallback(async ({ password }: { password: string }) => {
+  const login = useCallback(async ({ username, password }: { username: string; password: string }) => {
     if (auth.status !== "loggedOut") return;
     try {
+      const [owner, repo] = username.split('/');
+      if (!owner || !repo) throw new Error("Invalid repository format");
+
       const octokit = new Octokit({ auth: password });
-      await octokit.rest.users.getAuthenticated();
-      const session = { accessToken: password };
+      await octokit.rest.repos.getContent({ owner, repo, path: "README.md" });
+
+      const session = { owner, repo, accessToken: password };
       saveSession(session);
       setAuth({ status: "loggedIn", session });
+
       return true;
     } catch {
       return false;
@@ -123,7 +130,8 @@ export function useAuth(): Auth {
 }
 
 /** ---------- (Optional) strict accessor for protected areas ---------- */
-export function useSession(): Session | undefined {
-  const a = useAuth();
-  return a.status === "loggedIn" ? a.session : undefined;
+export function useSession(): Session {
+  const auth = useAuth();
+  if (auth.status === "loggedOut") throw new Error("useSession must be used within a logged-in context");
+  return auth.session;
 }
