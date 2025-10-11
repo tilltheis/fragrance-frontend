@@ -123,36 +123,6 @@ function toDistributionStats(dist: any): DistributionStats | undefined {
   return { bucketDistribution, median, p25, p75, iqr, count };
 }
 
-export function parseFragrance(item: any): Fragrance {
-  return {
-    id: item.id,
-    brandQuery: item.brand_query,
-    nameQuery: item.name_query,
-    owned: item.owned || undefined,
-    brand: item.brand || undefined,
-    name: item.name || undefined,
-    concentration: item.concentration || undefined,
-    scent: toDistributionStats(item.scent),
-    longevity: toDistributionStats(item.longevity),
-    sillage: toDistributionStats(item.sillage),
-    pricing: toDistributionStats(item.pricing),
-    season: item.season || undefined,
-    occasion: item.occasion || undefined,
-    type: item.type || undefined,
-    notes: item.structure === "pyramid"
-      ? ((item.head || item.heart || item.base)
-        && { kind: "pyramid", head: item.head ?? [], heart: item.heart ?? [], base: item.base ?? [] })
-      : (item.structure === "linear" && (item.notes && { kind: "linear", notes: item.notes })),
-    rating: item.rating === null ? undefined : item.rating,
-    reason: item.reason || undefined,
-    comment: item.comment || undefined,
-    sellers: item.sellers ? new Set(item.sellers) : undefined,
-    createdAt: item.createdAt ? new Date(item.createdAt) : new Date(),
-    firstTestedAt: item.firstTestedAt ? new Date(item.firstTestedAt) : undefined,
-    updatedAt: item.updatedAt ? new Date(item.updatedAt) : undefined,
-  };
-}
-
 export function parseStaticFragranceData(item: any): StaticFragranceData {
   return {
     id: item.id,

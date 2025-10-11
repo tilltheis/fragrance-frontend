@@ -1,13 +1,13 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Octokit } from 'octokit';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import { AppearanceSelector } from './AppearanceSelector';
 import { AuthForm } from './AuthForm';
 import { useSession } from './AuthProvider';
 import { type FragranceCardMode } from './FragranceCard';
 import { FragranceCardModeSelector, getInitialFragranceCardMode } from './FragranceCardModeSelector';
 import { FragranceGrid } from './FragranceGrid';
-import { parseFragrance, type DynamicFragranceData, type Fragrance } from './types';
+import { parseDynamicFragranceData, parseStaticFragranceData, type DynamicFragranceData, type Fragrance, type StaticFragranceData } from './types';
 
 function FragranceContent({
   isPending,
@@ -20,9 +20,9 @@ function FragranceContent({
   error: Error | null | undefined;
   fragrances: Record<number, Fragrance> | undefined;
   cardMode: FragranceCardMode;
-  onChange?: (changedDynamicData: Fragrance) => void;
+  onChange?: (changedDynamicFragranceData: DynamicFragranceData) => void;
 }) {
-  if (isPending) {
+  if (isPending || !fragrances) {
     return <div className="text-fg-base">Lade Düfte...</div>;
   }
   if (error) {
@@ -32,7 +32,7 @@ function FragranceContent({
       </div>
     );
   }
-  if (!fragrances) {
+  if (Object.keys(fragrances).length === 0) {
     return <div className="text-fg-base">Keine Düfte gefunden.</div>;
   }
   return <FragranceGrid fragrances={fragrances} cardMode={cardMode} onChange={onChange} />;
@@ -45,45 +45,103 @@ export function LoggedInLayout() {
   const octokit = useMemo(() => new Octokit({ auth: session.accessToken }), [session]);
   const queryClient = useQueryClient();
 
-  const { data: fragrances, isPending, error } = useQuery<Record<number, Fragrance>>({
+  const { data: staticData, isPending: staticPending, error: staticError } = useQuery<Record<number, StaticFragranceData>>({
     queryKey: ['static-fragrance-data'],
     queryFn: async () => {
-      const paths = ['static-fragrance-data.jsonl', 'dynamic-fragrance-data.jsonl'];
-      const [staticData, dynamicData] = await Promise.all(paths.map(async (path) => {
-        const { data } = await octokit.rest.repos.getContent({
-          owner: session.owner,
-          repo: session.repo,
-          path,
-        });
+      const { data } = await octokit.rest.repos.getContent({
+        owner: session.owner,
+        repo: session.repo,
+        path: 'static-fragrance-data.jsonl',
+      });
 
-        if (!('content' in data) || typeof data.content !== 'string') {
-          throw new Error(`${path}: Missing or invalid 'content' field in GitHub API response`);
-        }
+      if (!('content' in data) || typeof data.content !== 'string') {
+        throw new Error('static-fragrance-data.jsonl: Missing or invalid "content" field in GitHub API response');
+      }
 
-        const decodedContent = new TextDecoder('utf-8').decode(Uint8Array.from(atob(data.content), c => c.charCodeAt(0)));
-        return decodedContent.split('\n').filter(l => l.trim()).map(l => JSON.parse(l));
-      })) as [Record<string, any>[], Record<string, any>[]];
-
-      const fragranceData =  [...dynamicData, ...staticData].reduce((acc, item) => {
-        acc[item.id] = { ...(acc[item.id] ?? {}), ...item };
+      const decodedContent = new TextDecoder('utf-8').decode(Uint8Array.from(atob(data.content), c => c.charCodeAt(0)));
+      const staticItems = decodedContent.split('\n').filter(l => l.trim()).map(l => JSON.parse(l));
+      
+      const staticData = staticItems.reduce((acc, item) => {
+        acc[item.id] = item;
         return acc;
       }, {} as Record<number, Record<string, any>>);
 
       return Object.fromEntries(
-        Object.entries(fragranceData).map(([id, value]) => [Number(id), parseFragrance(value)])
+        Object.entries(staticData).map(([id, value]) => [Number(id), parseStaticFragranceData(value)])
       );
     }
   });
 
+  const { data: dynamicDataWithSha, isPending: dynamicPending, error: dynamicError } = useQuery<{
+    data: Record<number, DynamicFragranceData>;
+    sha: string;
+  }>({
+    queryKey: ['dynamic-fragrance-data'],
+    queryFn: async () => {
+      const { data } = await octokit.rest.repos.getContent({
+        owner: session.owner,
+        repo: session.repo,
+        path: 'dynamic-fragrance-data.jsonl',
+      });
+
+      if (!('content' in data) || typeof data.content !== 'string' || !('sha' in data)) {
+        throw new Error('dynamic-fragrance-data.jsonl: Missing or invalid "content" or "sha" field in GitHub API response');
+      }
+
+      const decodedContent = new TextDecoder().decode(Uint8Array.from(atob(data.content), c => c.charCodeAt(0)));
+      const dynamicItems = decodedContent.split('\n').filter(l => l.trim()).map(l => JSON.parse(l));
+
+      const dynamicData = dynamicItems.reduce((acc, item) => {
+        acc[item.id] = item;
+        return acc;
+      }, {} as Record<number, Record<string, any>>);
+
+      const parsedData = Object.fromEntries(
+        Object.entries(dynamicData).map(([id, value]) => [Number(id), parseDynamicFragranceData(value)])
+      );
+
+      return {
+        data: parsedData,
+        sha: data.sha
+      };
+    }
+  });
+
+  const dynamicData = dynamicDataWithSha?.data;
+  
+  const [fragrances, setFragrances] = useState<Record<number, Fragrance> | undefined>();
+
+  useEffect(() => {
+    if (!staticData || !dynamicData) {
+      setFragrances(undefined);
+      return;
+    }
+    
+    const combined: Record<number, Fragrance> = {};
+
+    for (const id in dynamicData) {
+      const newFragrance = { ...dynamicData[id], ...(staticData[id] ?? {}) } as Fragrance;
+      if (fragrances?.[id] && JSON.stringify(fragrances[id]) === JSON.stringify(newFragrance)) {
+        combined[id] = fragrances[id];
+      } else {
+        combined[id] = newFragrance;
+      }
+    }
+
+    setFragrances(combined);
+  }, [staticData, dynamicData]);
+
+  const isPending = staticPending || dynamicPending;
+  const error = staticError || dynamicError;
+
   const [cardMode, setCardMode] = useState<FragranceCardMode>(getInitialFragranceCardMode());
 
-  const onChange = useCallback((changedDynamicData: Fragrance) => {
-    queryClient.setQueryData(['static-fragrance-data'], (oldData: any) => {
-      console.log(changedDynamicData.rating);
+  const onChange = useCallback((changedDynamicFragranceData: DynamicFragranceData) => {
+    queryClient.setQueryData(['dynamic-fragrance-data'], (oldData: { data: Record<number, DynamicFragranceData>; sha: string; } | undefined) => {
       if (!oldData) return oldData;
       return {
         ...oldData,
-        [changedDynamicData.id]: changedDynamicData,
+        data: { ...oldData.data, [changedDynamicFragranceData.id]: changedDynamicFragranceData }
       };
     });
   }, [queryClient]);

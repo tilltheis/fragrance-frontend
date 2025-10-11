@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { FragranceCard, type FragranceCardMode } from './FragranceCard';
 import { FragranceDetailPanel } from './FragranceDetailPanel';
-import { type Fragrance } from './types';
+import { type DynamicFragranceData, type Fragrance } from './types';
 
 const MemoizedFragranceDetailPanel = React.memo(FragranceDetailPanel);
 const MemoizedFragranceCard = React.memo(FragranceCard);
@@ -9,7 +9,7 @@ const MemoizedFragranceCard = React.memo(FragranceCard);
 type FragranceGridProps = {
   fragrances: Record<number, Fragrance>;
   cardMode: FragranceCardMode;
-  onChange?: (changedDynamicData: Fragrance) => void;
+  onChange?: (changedDynamicFragranceData: DynamicFragranceData) => void;
 };
 
 export function FragranceGrid({ fragrances, cardMode, onChange }: FragranceGridProps) {
@@ -28,7 +28,7 @@ export function FragranceGrid({ fragrances, cardMode, onChange }: FragranceGridP
             key={fragrance.id}
             fragrance={fragrance}
             onClose={handleClose}
-            onChange={e => onChange?.(e)}
+            onChange={onChange}
           />
         ) : (
           <MemoizedFragranceCard
