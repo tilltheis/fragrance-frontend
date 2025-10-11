@@ -139,11 +139,13 @@ export function LoggedInLayout() {
 
     console.log('Saving dynamic fragrance data...', diff);
 
+    const action = currentDynamicDataWithSha.data[updatedDynamicData.id] ? 'update' : 'add';
+
     return octokit.rest.repos.createOrUpdateFileContents({
       owner: session.owner,
       repo: session.repo,
       path: 'dynamic-fragrance-data.jsonl',
-      message: `[app:update] ${JSON.stringify(diff)}`,
+      message: `[app:${action}] ${JSON.stringify(diff)}`,
       content: encodedContent,
       sha: currentDynamicDataWithSha.sha,
     });
@@ -183,13 +185,14 @@ export function LoggedInLayout() {
   const pendingDataRef = useRef(new Map<number, DynamicFragranceData>());
 
   const [pendingData, setPendingData] = useState<Record<number, DynamicFragranceData>>({});
-  
-  const debouncedSave = useCallback((updatedDynamicData: DynamicFragranceData) => {
+
+  const debouncedSave = useCallback((updatedDynamicData: DynamicFragranceData, delay: number = DEBOUNCE_DELAY_MS) => {
     const fragranceId = updatedDynamicData.id;
     
     // Store the latest data for this fragrance
     pendingDataRef.current.set(fragranceId, updatedDynamicData);
-    
+    setPendingData((prev) => ({ ...prev, [fragranceId]: updatedDynamicData }));
+
     // Clear existing timer for this fragrance
     const existingTimer = debounceTimersRef.current.get(fragranceId);
     if (existingTimer) {
@@ -208,7 +211,7 @@ export function LoggedInLayout() {
         });
       }
       debounceTimersRef.current.delete(fragranceId);
-    }, DEBOUNCE_DELAY_MS);
+    }, delay);
     
     debounceTimersRef.current.set(fragranceId, newTimer);
   }, [updateFragranceMutation]);
@@ -258,11 +261,36 @@ export function LoggedInLayout() {
   const [cardMode, setCardMode] = useState<FragranceCardMode>(getInitialFragranceCardMode());
 
   const onChange = useCallback((changedDynamicFragranceData: DynamicFragranceData) => {
-    setPendingData((prev) => ({ ...prev, [changedDynamicFragranceData.id]: changedDynamicFragranceData }));
-    
-    // Debounce the actual save
     debouncedSave(changedDynamicFragranceData);
   }, [queryClient, debouncedSave]);
+
+  const [newBrandQuery, setNewBrandQuery] = useState('');
+  const [newNameQuery, setNewNameQuery] = useState('');
+
+  function handleCreateNewFragrance(event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
+    event.preventDefault();
+    const brandQuery = newBrandQuery.trim();
+    const nameQuery = newNameQuery.trim();
+    if (!brandQuery || !nameQuery) return;
+
+    // Find next available id
+    const allIds = [
+      ...(staticData ? Object.keys(staticData) : []),
+      ...(dynamicData ? Object.keys(dynamicData) : []),
+    ].map(Number);
+    const nextId = allIds.length > 0 ? Math.max(...allIds) + 1 : 1;
+
+    const newDynamicFragrance: DynamicFragranceData = {
+      id: nextId,
+      brandQuery,
+      nameQuery,
+    };
+
+    debouncedSave(newDynamicFragrance, 0);
+
+    setNewBrandQuery('');
+    setNewNameQuery('');
+  }
 
   return (
     <div className="min-h-screen bg-nav-bg">
@@ -281,6 +309,94 @@ export function LoggedInLayout() {
           <AppearanceSelector />
         </div>
       </header>
+
+      <form className="bg-card-bg p-6 rounded-lg shadow-lg w-80 border border-card-border text-card-fg">
+        <div className="mb-6">
+          <label className="block text-fg-base text-sm font-bold mb-2" htmlFor="newBrandQuery">
+            Brand
+          </label>
+          <input
+            className={`
+              text-input-fg
+              bg-input-bg
+              border
+              rounded
+              border-input-border
+              hover:border-input-hover-border
+              w-full
+              py-2
+              px-3
+              text-fg-base
+              leading-tight
+              focus:border-input-focus-border
+              focus:outline-focus-ring
+              focus-visible:ring-2
+              focus-visible:ring-focus-ring
+              focus-visible:ring-offset-1
+              `}
+            id="newBrandQuery"
+            type="text"
+            value={newBrandQuery}
+            onChange={(e) => setNewBrandQuery(e.target.value)}
+          />
+        </div>
+        <div className="mb-6">
+          <label className="block text-fg-base text-sm font-bold mb-2" htmlFor="newNameQuery">
+            Name
+          </label>
+          <input
+            className={`
+              text-input-fg
+              bg-input-bg
+              border
+              rounded
+              border-input-border
+              hover:border-input-hover-border
+              w-full
+              py-2
+              px-3
+              text-fg-base
+              leading-tight
+              focus:border-input-focus-border
+              focus:outline-focus-ring
+              focus-visible:ring-2
+              focus-visible:ring-focus-ring
+              focus-visible:ring-offset-1
+              `}
+            id="newNameQuery"
+            type="text"
+            value={newNameQuery}
+            onChange={(e) => setNewNameQuery(e.target.value)}
+          />
+        </div>
+        <div className="flex items-center justify-between">
+          <button
+            className="
+              bg-button-primary-fill
+              hover:bg-button-primary-hover
+              active:bg-button-primary-active
+              text-button-primary-fg
+              border
+              border-button-primary-border
+              rounded
+              font-bold
+              py-2
+              px-4
+              rounded
+              focus:outline-none
+              focus:shadow-outline
+              focus:outline-none
+              focus-visible:ring-2 focus-visible:ring-focus-ring
+              focus-visible:ring-offset-2
+              ring-offset-card-bg
+              "
+            type="button"
+            onClick={handleCreateNewFragrance}
+          >
+            Log In
+          </button>
+        </div>
+      </form>
 
       <main className="max-w-7xl mx-auto px-4 py-6">
         <MemoizedFragranceContent
