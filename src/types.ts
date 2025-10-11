@@ -76,12 +76,12 @@ export interface Fragrance {
   owned?: boolean;
 
   // timestamps
-  createdAt: Date;
+  createdAt?: Date;
   firstTestedAt?: Date;
   updatedAt?: Date;
 }
 
-export type StaticFragranceData = Pick<Fragrance, 'id' | 'brand' | 'name' | 'concentration' | 'scent' | 'longevity' | 'sillage' | 'pricing' | 'season' | 'occasion' | 'type' | 'notes'>;
+export type StaticFragranceData = Pick<Fragrance, 'id' | 'brand' | 'name' | 'concentration' | 'scent' | 'longevity' | 'sillage' | 'pricing' | 'season' | 'occasion' | 'type' | 'notes' | 'createdAt'>;
 export type DynamicFragranceData = Pick<Fragrance, 'id' | 'brandQuery' | 'nameQuery' | 'rating' | 'reason' | 'comment' | 'sellers' | 'owned' | 'firstTestedAt' | 'updatedAt'>;
 
 // --- DistributionStats helpers ---
@@ -148,6 +148,42 @@ export function parseFragrance(item: any): Fragrance {
     comment: item.comment || undefined,
     sellers: item.sellers ? new Set(item.sellers) : undefined,
     createdAt: item.createdAt ? new Date(item.createdAt) : new Date(),
+    firstTestedAt: item.firstTestedAt ? new Date(item.firstTestedAt) : undefined,
+    updatedAt: item.updatedAt ? new Date(item.updatedAt) : undefined,
+  };
+}
+
+export function parseStaticFragranceData(item: any): StaticFragranceData {
+  return {
+    id: item.id,
+    brand: item.brand || undefined,
+    name: item.name || undefined,
+    concentration: item.concentration || undefined,
+    scent: toDistributionStats(item.scent),
+    longevity: toDistributionStats(item.longevity),
+    sillage: toDistributionStats(item.sillage),
+    pricing: toDistributionStats(item.pricing),
+    season: item.season || undefined,
+    occasion: item.occasion || undefined,
+    type: item.type || undefined,
+    notes: item.structure === "pyramid"
+      ? ((item.head || item.heart || item.base)
+        && { kind: "pyramid", head: item.head ?? [], heart: item.heart ?? [], base: item.base ?? [] })
+      : (item.structure === "linear" && (item.notes && { kind: "linear", notes: item.notes })),
+    createdAt: item.createdAt ? new Date(item.createdAt) : new Date(),
+  };
+}
+
+export function parseDynamicFragranceData(item: any): DynamicFragranceData {
+  return {
+    id: item.id,
+    brandQuery: item.brandQuery,
+    nameQuery: item.nameQuery,
+    owned: item.owned || undefined,
+    rating: item.rating === null ? undefined : item.rating,
+    reason: item.reason || undefined,
+    comment: item.comment || undefined,
+    sellers: item.sellers ? new Set(item.sellers) : undefined,
     firstTestedAt: item.firstTestedAt ? new Date(item.firstTestedAt) : undefined,
     updatedAt: item.updatedAt ? new Date(item.updatedAt) : undefined,
   };

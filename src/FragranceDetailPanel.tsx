@@ -1,14 +1,14 @@
 import { TypeChips } from './TypeChips';
 import { SeasonBar } from './SeasonBar';
 import { OccasionBar } from './OccasionBar';
-import type { Fragrance, LinearNotes, PyramidNotes } from './types';
+import type { DynamicFragranceData, Fragrance, LinearNotes, PyramidNotes } from './types';
 import { CommunityRatings } from './CommunityRatings';
 import { EditablePersonalRating } from './EditablePersonalRating';
 
 type FragranceDetailPanelProps = {
   fragrance: Fragrance;
   onClose?: (closedFragrance: Fragrance) => void;
-  onChange?: (changedFragrance: Fragrance) => void;
+  onChange?: (changedDynamicFragranceData: DynamicFragranceData) => void;
 };
 
 export function FragranceDetailPanel({ fragrance, onClose, onChange }: FragranceDetailPanelProps) {
@@ -123,7 +123,7 @@ export function FragranceDetailPanel({ fragrance, onClose, onChange }: Fragrance
 
           onClick={(e) => e.stopPropagation()}
         >
-          <button onClick={onClose} className="absolute top-2 right-2 text-fg-muted hover:text-fg-accent">X</button>
+          <button onClick={() => onClose?.(fragrance)} className="absolute top-2 right-2 text-fg-muted hover:text-fg-accent">X</button>
 
           {/* Header */}
           <div className="mb-2">
@@ -148,7 +148,7 @@ export function FragranceDetailPanel({ fragrance, onClose, onChange }: Fragrance
             <EditablePersonalRating
               data={fragrance}
               sellerOptions={new Set(["Douglas", "Flaconi", "Parfumdreams", "Notino", "Sephora", "Müller", "Rossmann", "dm"])}
-              onChange={(changedDynamicFragranceData) => onChange({ ...fragrance, ...changedDynamicFragranceData })}
+              onChange={onChange}
             />
           </div>
         </div>

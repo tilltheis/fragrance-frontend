@@ -1,20 +1,49 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Octokit } from 'octokit';
-import { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { AppearanceSelector } from './AppearanceSelector';
 import { AuthForm } from './AuthForm';
 import { useSession } from './AuthProvider';
 import { type FragranceCardMode } from './FragranceCard';
 import { FragranceCardModeSelector, getInitialFragranceCardMode } from './FragranceCardModeSelector';
 import { FragranceGrid } from './FragranceGrid';
-import unparsedFragrances from './fragrances.json';
-import { parseFragrance, type Fragrance } from './types';
+import { parseFragrance, type DynamicFragranceData, type Fragrance } from './types';
 
-const DATA: Fragrance[] = unparsedFragrances.map(parseFragrance);
+function FragranceContent({
+  isPending,
+  error,
+  fragrances,
+  cardMode,
+  onChange,
+}: {
+  isPending: boolean;
+  error: Error | null | undefined;
+  fragrances: Record<number, Fragrance> | undefined;
+  cardMode: FragranceCardMode;
+  onChange?: (changedDynamicData: Fragrance) => void;
+}) {
+  if (isPending) {
+    return <div className="text-fg-base">Lade Düfte...</div>;
+  }
+  if (error) {
+    return (
+      <div className="text-status-error-fg bg-status-error-bg border rounded p-2 border-status-error-border">
+        Fehler beim Laden der Düfte: {error.message}
+      </div>
+    );
+  }
+  if (!fragrances) {
+    return <div className="text-fg-base">Keine Düfte gefunden.</div>;
+  }
+  return <FragranceGrid fragrances={fragrances} cardMode={cardMode} onChange={onChange} />;
+}
+
+const MemoizedFragranceContent = React.memo(FragranceContent);
 
 export function LoggedInLayout() {
   const session = useSession();
   const octokit = useMemo(() => new Octokit({ auth: session.accessToken }), [session]);
+  const queryClient = useQueryClient();
 
   const { data: fragrances, isPending, error } = useQuery<Record<number, Fragrance>>({
     queryKey: ['static-fragrance-data'],
@@ -46,23 +75,18 @@ export function LoggedInLayout() {
     }
   });
 
-  const [_fragrances, setFragrances] = useState<Record<number, Fragrance>>(
-    () => DATA.reduce((acc, fragrance) => {
-      acc[fragrance.id] = fragrance;
-      return acc;
-    }, {} as Record<number, Fragrance>)
-  );
-
   const [cardMode, setCardMode] = useState<FragranceCardMode>(getInitialFragranceCardMode());
 
-  let Content;
-  if (isPending) {
-    Content = () => <div className="text-fg-base">Lade Düfte...</div>;
-  } else if (error) {
-    Content = () => <div className="text-status-error-fg bg-status-error-bg border rounded p-2 border-status-error-border">Fehler beim Laden der Düfte: {error.message}</div>;
-  } else {
-    Content = () => <FragranceGrid fragrances={fragrances} cardMode={cardMode} />;
-  }
+  const onChange = useCallback((changedDynamicData: Fragrance) => {
+    queryClient.setQueryData(['static-fragrance-data'], (oldData: any) => {
+      console.log(changedDynamicData.rating);
+      if (!oldData) return oldData;
+      return {
+        ...oldData,
+        [changedDynamicData.id]: changedDynamicData,
+      };
+    });
+  }, [queryClient]);
 
   return (
     <div className="min-h-screen bg-nav-bg">
@@ -71,8 +95,8 @@ export function LoggedInLayout() {
           <h1 className="text-2xl font-bold text-nav-fg">
             Duftsammlung
           </h1>
-          <p className="text-fg-muted mt-1">
-            {DATA.length} Düfte in der Sammlung
+          <p className="text-fg-muted mt-1 h-6">
+            {fragrances && `${Object.keys(fragrances).length} Düfte in der Sammlung`}
           </p>
         </div>
         <div className="flex gap-2">
@@ -83,7 +107,13 @@ export function LoggedInLayout() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-6">
-        <Content />
+        <MemoizedFragranceContent
+          isPending={isPending}
+          error={error}
+          fragrances={fragrances}
+          cardMode={cardMode}
+          onChange={onChange}
+        />
       </main>
     </div>
   );

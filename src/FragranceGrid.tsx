@@ -1,10 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { FragranceCard, type FragranceCardMode } from './FragranceCard';
 import { FragranceDetailPanel } from './FragranceDetailPanel';
-import unparsedFragrances from './fragrances.json';
-import { parseFragrance, type Fragrance } from './types';
-
-const DATA: Fragrance[] = unparsedFragrances.map(parseFragrance);
+import { type Fragrance } from './types';
 
 const MemoizedFragranceDetailPanel = React.memo(FragranceDetailPanel);
 const MemoizedFragranceCard = React.memo(FragranceCard);
@@ -12,25 +9,13 @@ const MemoizedFragranceCard = React.memo(FragranceCard);
 type FragranceGridProps = {
   fragrances: Record<number, Fragrance>;
   cardMode: FragranceCardMode;
+  onChange?: (changedDynamicData: Fragrance) => void;
 };
 
-export function FragranceGrid({ fragrances, cardMode }: FragranceGridProps) {
-  const [_fragrances, setFragrances] = useState<Record<number, Fragrance>>(
-    () => DATA.reduce((acc, fragrance) => {
-      acc[fragrance.id] = fragrance;
-      return acc;
-    }, {} as Record<number, Fragrance>)
-  );
-
+export function FragranceGrid({ fragrances, cardMode, onChange }: FragranceGridProps) {
   const [selectedFragranceId, setSelectedFragranceId] = useState<number | undefined>();
 
   const handleClose = useCallback(() => setSelectedFragranceId(undefined), []);
-  const handleChange = useCallback((changedFragrance: Fragrance) => {
-    setFragrances(prev => ({
-      ...prev,
-      [changedFragrance.id]: changedFragrance
-    }));
-  }, []);
   const handleSelect = useCallback((selectedFragrance: Fragrance) => {
     setSelectedFragranceId(selectedFragrance.id);
   }, []);
@@ -43,7 +28,7 @@ export function FragranceGrid({ fragrances, cardMode }: FragranceGridProps) {
             key={fragrance.id}
             fragrance={fragrance}
             onClose={handleClose}
-            onChange={handleChange}
+            onChange={e => onChange?.(e)}
           />
         ) : (
           <MemoizedFragranceCard

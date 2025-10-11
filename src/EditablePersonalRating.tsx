@@ -3,7 +3,7 @@ import type { DynamicFragranceData } from "./types";
 export type EditablePersonalRatingProps = {
   data: DynamicFragranceData;
   sellerOptions: Set<string>;
-  onChange: (changedDynamicFragranceData: DynamicFragranceData) => void;
+  onChange?: (changedDynamicFragranceData: DynamicFragranceData) => void;
 };
 
 
@@ -29,7 +29,7 @@ export function EditablePersonalRating({
             value={Math.round((rating ?? 0) * 100)}
             onChange={e => {
               const rating = Number(e.target.value) / 100;
-              onChange({...data, rating});
+              onChange?.({...data, rating});
             }}
             className="flex-1 accent-[var(--meter-rating-fill)] h-2 rounded-full bg-[var(--meter-rating-track)]"
           />
@@ -44,7 +44,7 @@ export function EditablePersonalRating({
           className="w-full min-h-16 rounded border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--input-fg)] p-2"
           placeholder="Warum diese Bewertung?"
           value={reason}
-          onChange={e => onChange({...data, reason: e.target.value || undefined})}
+          onChange={e => onChange?.({...data, reason: e.target.value || undefined})}
         />
       </div>
 
@@ -55,7 +55,7 @@ export function EditablePersonalRating({
           className="w-full min-h-16 rounded border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--input-fg)] p-2"
           placeholder="Allgemeine Notizen…"
           value={comment}
-          onChange={e => onChange({...data, comment: e.target.value})}
+          onChange={e => onChange?.({...data, comment: e.target.value})}
         />
       </div>
 
@@ -75,7 +75,7 @@ export function EditablePersonalRating({
                   onClick={() => {
                     const updatedSellers = new Set([...sellersArray]);
                     updatedSellers.delete(s);
-                    onChange({
+                    onChange?.({
                       ...data,
                       sellers: updatedSellers
                     });
@@ -96,7 +96,7 @@ export function EditablePersonalRating({
             onChange={e => {
               const seller = e.target.value.trim();
               if (seller) {
-                onChange({...data, sellers: new Set(sellersArray).add(seller)});
+                onChange?.({...data, sellers: new Set(sellersArray).add(seller)});
               }
             }}
           />
