@@ -45,70 +45,42 @@ export function LoggedInLayout() {
   const octokit = useMemo(() => new Octokit({ auth: session.accessToken }), [session]);
   const queryClient = useQueryClient();
 
-  const { data: staticData, isPending: staticPending, error: staticError } = useQuery<Record<number, StaticFragranceData>>({
-    queryKey: ['static-fragrance-data'],
-    queryFn: async () => {
-      const { data } = await octokit.rest.repos.getContent({
-        owner: session.owner,
-        repo: session.repo,
-        path: 'static-fragrance-data.jsonl',
-      });
-
-      if (!('content' in data) || typeof data.content !== 'string') {
-        throw new Error('static-fragrance-data.jsonl: Missing or invalid "content" field in GitHub API response');
-      }
-
-      const decodedContent = new TextDecoder('utf-8').decode(Uint8Array.from(atob(data.content), c => c.charCodeAt(0)));
-      const staticItems = decodedContent.split('\n').filter(l => l.trim()).map(l => JSON.parse(l));
-      
-      const staticData = staticItems.reduce((acc, item) => {
-        acc[item.id] = item;
-        return acc;
-      }, {} as Record<number, Record<string, any>>);
-
-      return Object.fromEntries(
-        Object.entries(staticData).map(([id, value]) => [Number(id), parseStaticFragranceData(value)])
-      );
+  async function fetchAndParseJsonl<T>( path: string, parser: (value: any) => T): Promise<{ data: Record<number, T>; sha: string }> {
+    const { data } = await octokit.rest.repos.getContent({
+      owner: session.owner,
+      repo: session.repo,
+      path,
+    });
+    if (!('content' in data) || typeof data.content !== 'string' || !('sha' in data)) {
+      throw new Error(`${path}: Missing or invalid content or sha field in GitHub API response`);
     }
+    const decodedContent = new TextDecoder('utf-8').decode(Uint8Array.from(atob(data.content), c => c.charCodeAt(0)));
+    const items = decodedContent.split('\n').filter(l => l.trim()).map(l => JSON.parse(l));
+    const parsed: Record<number, T> = {};
+    for (const item of items) {
+      parsed[Number(item.id)] = parser(item);
+    }
+    return { data: parsed, sha: (data as any).sha };
+  }
+
+  const { data: staticDataWithSha, isPending: staticPending, error: staticError } = useQuery<{
+    data: Record<number, StaticFragranceData>;
+    sha: string;
+  }>({
+    queryKey: ['static-fragrance-data'],
+    queryFn: () => fetchAndParseJsonl<StaticFragranceData>('static-fragrance-data.jsonl', parseStaticFragranceData),
   });
+  const staticData = staticDataWithSha?.data;
 
   const { data: dynamicDataWithSha, isPending: dynamicPending, error: dynamicError } = useQuery<{
     data: Record<number, DynamicFragranceData>;
     sha: string;
   }>({
     queryKey: ['dynamic-fragrance-data'],
-    queryFn: async () => {
-      const { data } = await octokit.rest.repos.getContent({
-        owner: session.owner,
-        repo: session.repo,
-        path: 'dynamic-fragrance-data.jsonl',
-      });
-
-      if (!('content' in data) || typeof data.content !== 'string' || !('sha' in data)) {
-        throw new Error('dynamic-fragrance-data.jsonl: Missing or invalid "content" or "sha" field in GitHub API response');
-      }
-
-      const decodedContent = new TextDecoder().decode(Uint8Array.from(atob(data.content), c => c.charCodeAt(0)));
-      const dynamicItems = decodedContent.split('\n').filter(l => l.trim()).map(l => JSON.parse(l));
-
-      const dynamicData = dynamicItems.reduce((acc, item) => {
-        acc[item.id] = item;
-        return acc;
-      }, {} as Record<number, Record<string, any>>);
-
-      const parsedData = Object.fromEntries(
-        Object.entries(dynamicData).map(([id, value]) => [Number(id), parseDynamicFragranceData(value)])
-      );
-
-      return {
-        data: parsedData,
-        sha: data.sha
-      };
-    }
+    queryFn: () => fetchAndParseJsonl<DynamicFragranceData>('dynamic-fragrance-data.jsonl', parseDynamicFragranceData),
   });
-
   const dynamicData = dynamicDataWithSha?.data;
-  
+
   const [fragrances, setFragrances] = useState<Record<number, Fragrance> | undefined>();
 
   useEffect(() => {
@@ -116,7 +88,7 @@ export function LoggedInLayout() {
       setFragrances(undefined);
       return;
     }
-    
+
     const combined: Record<number, Fragrance> = {};
 
     for (const id in dynamicData) {
