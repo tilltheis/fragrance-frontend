@@ -1,13 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Octokit } from 'octokit';
-import React, { useCallback, useMemo, useState, useEffect } from 'react';
+import React, { useCallback, useMemo, useState, useEffect, useRef } from 'react';
 import { AppearanceSelector } from './AppearanceSelector';
 import { AuthForm } from './AuthForm';
 import { useSession } from './AuthProvider';
 import { type FragranceCardMode } from './FragranceCard';
 import { FragranceCardModeSelector, getInitialFragranceCardMode } from './FragranceCardModeSelector';
 import { FragranceGrid } from './FragranceGrid';
-import { parseDynamicFragranceData, parseStaticFragranceData, type DynamicFragranceData, type Fragrance, type StaticFragranceData } from './types';
+import { parseDynamicFragranceData, parseStaticFragranceData, toDynamicFragranceData, type DynamicFragranceData, type Fragrance, type StaticFragranceData } from './types';
+
+const DEBOUNCE_DELAY_MS = 3000;
 
 function FragranceContent({
   isPending,
@@ -82,7 +84,6 @@ export function LoggedInLayout() {
   const dynamicData = dynamicDataWithSha?.data;
 
   async function saveDynamicFragranceData(updatedDynamicData: DynamicFragranceData) {
-    console.log('Saving dynamic fragrance data...', updatedDynamicData);
     const currentDynamicDataWithSha = queryClient.getQueryData<{
       data: Record<number, DynamicFragranceData>;
       sha: string;
@@ -115,17 +116,41 @@ export function LoggedInLayout() {
       .join('\n');
     const encodedContent = btoa(String.fromCharCode(...new TextEncoder().encode(jsonlContent)));
 
+    const actualDynamicDataChanges =
+      Object.entries(updatedDynamicData)
+        .sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
+        .filter(([key, value]) => {
+          const currentValue = currentDynamicDataWithSha.data[updatedDynamicData.id]?.[key as keyof DynamicFragranceData];
+          if (value instanceof Set) {
+            return !(currentValue instanceof Set) || value.size !== currentValue.size || [...value].some(v => !currentValue.has(v));
+          }
+          if (value instanceof Date) {
+            return !(currentValue instanceof Date) || value.getTime() !== currentValue.getTime();
+          }
+          return value !== currentValue;
+        });
+
+    if (actualDynamicDataChanges.length === 0) {
+      console.log('No actual changes to save for fragrance id', updatedDynamicData.id);
+      return Promise.resolve({ data: { content: { sha: currentDynamicDataWithSha.sha } } });
+    }
+
+    const diff = { id: updatedDynamicData.id, ...Object.fromEntries(actualDynamicDataChanges) };
+
+    console.log('Saving dynamic fragrance data...', diff);
+
     return octokit.rest.repos.createOrUpdateFileContents({
       owner: session.owner,
       repo: session.repo,
       path: 'dynamic-fragrance-data.jsonl',
-      message: `[app:update] { "id": ${updatedDynamicData.id} }`,
+      message: `[app:update] ${JSON.stringify(diff)}`,
       content: encodedContent,
       sha: currentDynamicDataWithSha.sha,
     });
   }
 
   const updateFragranceMutation = useMutation({
+    scope: { id: 'dynamic-fragrance-data' },
     mutationFn: async (updatedDynamicData: DynamicFragranceData) => {
       return saveDynamicFragranceData(updatedDynamicData);
     },
@@ -138,62 +163,69 @@ export function LoggedInLayout() {
     },
     
     // Update sha after successful save
-    onSuccess: (response: any) => {
+    onSuccess: (response: any, changedDynamicFragranceData: DynamicFragranceData) => {
       const newSha = response.data.content?.sha;
       if (newSha) {
-        queryClient.setQueryData<{
-          data: Record<number, DynamicFragranceData>;
-          sha: string;
-        }>(['dynamic-fragrance-data'], (oldData) => {
+        queryClient.setQueryData<{ data: Record<number, DynamicFragranceData>; sha: string; }>(['dynamic-fragrance-data'], (oldData) => {
           if (!oldData) return oldData;
-          return { ...oldData, sha: newSha };
+          return {
+            ...oldData,
+            data: { ...oldData.data, [changedDynamicFragranceData.id]: changedDynamicFragranceData },
+            sha: newSha
+          };
         });
       }
     },
   });
 
   // Per-fragrance debouncing
-  const debounceTimers = React.useRef(new Map<number, ReturnType<typeof setTimeout>>());
-  const pendingData = React.useRef(new Map<number, DynamicFragranceData>());
+  const debounceTimersRef = useRef(new Map<number, ReturnType<typeof setTimeout>>());
+  const pendingDataRef = useRef(new Map<number, DynamicFragranceData>());
+
+  const [pendingData, setPendingData] = useState<Record<number, DynamicFragranceData>>({});
   
   const debouncedSave = useCallback((updatedDynamicData: DynamicFragranceData) => {
     const fragranceId = updatedDynamicData.id;
     
     // Store the latest data for this fragrance
-    pendingData.current.set(fragranceId, updatedDynamicData);
+    pendingDataRef.current.set(fragranceId, updatedDynamicData);
     
     // Clear existing timer for this fragrance
-    const existingTimer = debounceTimers.current.get(fragranceId);
+    const existingTimer = debounceTimersRef.current.get(fragranceId);
     if (existingTimer) {
       clearTimeout(existingTimer);
     }
     
     // Set new timer for this fragrance
     const newTimer = setTimeout(() => {
-      const dataToSave = pendingData.current.get(fragranceId);
+      const dataToSave = pendingDataRef.current.get(fragranceId);
       if (dataToSave) {
         updateFragranceMutation.mutate(dataToSave);
-        pendingData.current.delete(fragranceId);
+        pendingDataRef.current.delete(fragranceId);
+        setPendingData((prev) => {
+          const { [fragranceId]: _, ...rest } = prev;
+          return rest;
+        });
       }
-      debounceTimers.current.delete(fragranceId);
-    }, 5000); // Wait 5 seconds after last edit for this fragrance
+      debounceTimersRef.current.delete(fragranceId);
+    }, DEBOUNCE_DELAY_MS);
     
-    debounceTimers.current.set(fragranceId, newTimer);
+    debounceTimersRef.current.set(fragranceId, newTimer);
   }, [updateFragranceMutation]);
 
   // Flush pending saves on unmount
   useEffect(() => {
     return () => {
       // Clear all timers
-      debounceTimers.current.forEach(timer => clearTimeout(timer));
+      debounceTimersRef.current.forEach(timer => clearTimeout(timer));
       
       // Save all pending changes immediately
-      pendingData.current.forEach(data => {
+      pendingDataRef.current.forEach(data => {
         updateFragranceMutation.mutate(data);
       });
       
-      debounceTimers.current.clear();
-      pendingData.current.clear();
+      debounceTimersRef.current.clear();
+      pendingDataRef.current.clear();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on unmount
@@ -208,8 +240,8 @@ export function LoggedInLayout() {
 
     const combined: Record<number, Fragrance> = {};
 
-    for (const id in dynamicData) {
-      const newFragrance = { ...dynamicData[id], ...(staticData[id] ?? {}) } as Fragrance;
+    for (const id in {...dynamicData, ...pendingData}) {
+      const newFragrance = { ...dynamicData[id], ...(pendingData[id] ?? {}) , ...(staticData[id] ?? {}) } as Fragrance;
       if (fragrances?.[id] && JSON.stringify(fragrances[id]) === JSON.stringify(newFragrance)) {
         combined[id] = fragrances[id];
       } else {
@@ -218,7 +250,7 @@ export function LoggedInLayout() {
     }
 
     setFragrances(combined);
-  }, [staticData, dynamicData]);
+  }, [staticData, dynamicData, pendingData]);
 
   const isPending = staticPending || dynamicPending;
   const error = staticError || dynamicError;
@@ -226,14 +258,7 @@ export function LoggedInLayout() {
   const [cardMode, setCardMode] = useState<FragranceCardMode>(getInitialFragranceCardMode());
 
   const onChange = useCallback((changedDynamicFragranceData: DynamicFragranceData) => {
-    // Immediately update cache optimistically
-    queryClient.setQueryData(['dynamic-fragrance-data'], (oldData: { data: Record<number, DynamicFragranceData>; sha: string; } | undefined) => {
-      if (!oldData) return oldData;
-      return {
-        ...oldData,
-        data: { ...oldData.data, [changedDynamicFragranceData.id]: changedDynamicFragranceData }
-      };
-    });
+    setPendingData((prev) => ({ ...prev, [changedDynamicFragranceData.id]: changedDynamicFragranceData }));
     
     // Debounce the actual save
     debouncedSave(changedDynamicFragranceData);

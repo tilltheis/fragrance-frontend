@@ -84,6 +84,21 @@ export interface Fragrance {
 export type StaticFragranceData = Pick<Fragrance, 'id' | 'brand' | 'name' | 'concentration' | 'scent' | 'longevity' | 'sillage' | 'pricing' | 'season' | 'occasion' | 'type' | 'notes' | 'createdAt'>;
 export type DynamicFragranceData = Pick<Fragrance, 'id' | 'brandQuery' | 'nameQuery' | 'rating' | 'reason' | 'comment' | 'sellers' | 'owned' | 'firstTestedAt' | 'updatedAt'>;
 
+export function toStaticFragranceData(x: Fragrance): StaticFragranceData {
+  const {
+    id, brand, name, concentration, scent, longevity, sillage, pricing,
+    season, occasion, type, notes, createdAt
+  } = x;
+  return { id, brand, name, concentration, scent, longevity, sillage, pricing, season, occasion, type, notes, createdAt };
+}
+
+export function toDynamicFragranceData(x: Fragrance): DynamicFragranceData {
+  const {
+    id, brandQuery, nameQuery, rating, reason, comment, sellers, owned, firstTestedAt, updatedAt
+  } = x;
+  return { id, brandQuery, nameQuery, rating, reason, comment, sellers, owned, firstTestedAt, updatedAt };
+}
+
 // --- DistributionStats helpers ---
 function parseBucketDistribution(dist: any): BucketDistribution | undefined {
   if (!dist || typeof dist !== 'object') return undefined;

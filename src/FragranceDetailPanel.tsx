@@ -1,7 +1,7 @@
 import { TypeChips } from './TypeChips';
 import { SeasonBar } from './SeasonBar';
 import { OccasionBar } from './OccasionBar';
-import type { DynamicFragranceData, Fragrance, LinearNotes, PyramidNotes } from './types';
+import { toDynamicFragranceData, type DynamicFragranceData, type Fragrance, type LinearNotes, type PyramidNotes } from './types';
 import { CommunityRatings } from './CommunityRatings';
 import { EditablePersonalRating } from './EditablePersonalRating';
 
@@ -146,7 +146,7 @@ export function FragranceDetailPanel({ fragrance, onClose, onChange }: Fragrance
             </div>
 
             <EditablePersonalRating
-              data={fragrance}
+              data={toDynamicFragranceData(fragrance)}
               sellerOptions={new Set(["Douglas", "Flaconi", "Parfumdreams", "Notino", "Sephora", "Müller", "Rossmann", "dm"])}
               onChange={onChange}
             />
