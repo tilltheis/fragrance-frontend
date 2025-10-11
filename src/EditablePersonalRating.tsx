@@ -26,6 +26,7 @@ export function EditablePersonalRating({
             type="range"
             min={0}
             max={100}
+            step={5}
             value={Math.round((rating ?? 0) * 100)}
             onChange={e => {
               const rating = Number(e.target.value) / 100;
