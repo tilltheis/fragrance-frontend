@@ -233,11 +233,10 @@ export function LoggedInLayout() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on unmount
 
-  const [fragrances, setFragrances] = useState<Record<number, Fragrance> | undefined>();
-
-  useEffect(() => {
+  const fragrancesRef = useRef<Record<number, Fragrance> | undefined>(undefined);
+  (() => {
     if (!staticData || !dynamicData) {
-      setFragrances(undefined);
+      fragrancesRef.current = undefined;
       return;
     }
 
@@ -245,15 +244,16 @@ export function LoggedInLayout() {
 
     for (const id in {...dynamicData, ...pendingData}) {
       const newFragrance = { ...dynamicData[id], ...(pendingData[id] ?? {}) , ...(staticData[id] ?? {}) } as Fragrance;
-      if (fragrances?.[id] && JSON.stringify(fragrances[id]) === JSON.stringify(newFragrance)) {
-        combined[id] = fragrances[id];
+      if (fragrancesRef.current?.[id] && JSON.stringify(fragrancesRef.current[id]) === JSON.stringify(newFragrance)) {
+        combined[id] = fragrancesRef.current[id];
       } else {
         combined[id] = newFragrance;
       }
     }
 
-    setFragrances(combined);
-  }, [staticData, dynamicData, pendingData]);
+    fragrancesRef.current = combined;
+  })();
+  const fragrances = fragrancesRef.current;
 
   const isPending = staticPending || dynamicPending;
   const error = staticError || dynamicError;
