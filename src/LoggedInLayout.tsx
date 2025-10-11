@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Octokit } from 'octokit';
 import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import { AppearanceSelector } from './AppearanceSelector';
@@ -81,6 +81,123 @@ export function LoggedInLayout() {
   });
   const dynamicData = dynamicDataWithSha?.data;
 
+  async function saveDynamicFragranceData(updatedDynamicData: DynamicFragranceData) {
+    console.log('Saving dynamic fragrance data...', updatedDynamicData);
+    const currentDynamicDataWithSha = queryClient.getQueryData<{
+      data: Record<number, DynamicFragranceData>;
+      sha: string;
+    }>(['dynamic-fragrance-data']);
+
+    if (!currentDynamicDataWithSha) {
+      throw new Error('No dynamic fragrance data in cache');
+    }
+
+    const updatedData = { ...currentDynamicDataWithSha.data, [updatedDynamicData.id]: updatedDynamicData };
+
+    const jsonlContent = Object.values(updatedData)
+      .sort((a, b) => a.id - b.id)
+      .map(item => {
+        const sortedItem = Object.fromEntries(
+          Object.entries(item)
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(([key, value]) => {
+              if (value instanceof Set || Array.isArray(value)) {
+                return [key, [...value].sort()];
+              }
+              if (value instanceof Date) {
+                return [key, value.toISOString()];
+              }
+              return [key, value];
+            })
+        );
+        return JSON.stringify(sortedItem);
+      })
+      .join('\n');
+    const encodedContent = btoa(String.fromCharCode(...new TextEncoder().encode(jsonlContent)));
+
+    return octokit.rest.repos.createOrUpdateFileContents({
+      owner: session.owner,
+      repo: session.repo,
+      path: 'dynamic-fragrance-data.jsonl',
+      message: `[app:update] { "id": ${updatedDynamicData.id} }`,
+      content: encodedContent,
+      sha: currentDynamicDataWithSha.sha,
+    });
+  }
+
+  const updateFragranceMutation = useMutation({
+    mutationFn: async (updatedDynamicData: DynamicFragranceData) => {
+      return saveDynamicFragranceData(updatedDynamicData);
+    },
+    
+    // Rollback on error
+    onError: (err) => {
+      console.error('Failed to save fragrance:', err);
+      // Refetch to restore correct state
+      queryClient.invalidateQueries({ queryKey: ['dynamic-fragrance-data'] });
+    },
+    
+    // Update sha after successful save
+    onSuccess: (response: any) => {
+      const newSha = response.data.content?.sha;
+      if (newSha) {
+        queryClient.setQueryData<{
+          data: Record<number, DynamicFragranceData>;
+          sha: string;
+        }>(['dynamic-fragrance-data'], (oldData) => {
+          if (!oldData) return oldData;
+          return { ...oldData, sha: newSha };
+        });
+      }
+    },
+  });
+
+  // Per-fragrance debouncing
+  const debounceTimers = React.useRef(new Map<number, ReturnType<typeof setTimeout>>());
+  const pendingData = React.useRef(new Map<number, DynamicFragranceData>());
+  
+  const debouncedSave = useCallback((updatedDynamicData: DynamicFragranceData) => {
+    const fragranceId = updatedDynamicData.id;
+    
+    // Store the latest data for this fragrance
+    pendingData.current.set(fragranceId, updatedDynamicData);
+    
+    // Clear existing timer for this fragrance
+    const existingTimer = debounceTimers.current.get(fragranceId);
+    if (existingTimer) {
+      clearTimeout(existingTimer);
+    }
+    
+    // Set new timer for this fragrance
+    const newTimer = setTimeout(() => {
+      const dataToSave = pendingData.current.get(fragranceId);
+      if (dataToSave) {
+        updateFragranceMutation.mutate(dataToSave);
+        pendingData.current.delete(fragranceId);
+      }
+      debounceTimers.current.delete(fragranceId);
+    }, 5000); // Wait 5 seconds after last edit for this fragrance
+    
+    debounceTimers.current.set(fragranceId, newTimer);
+  }, [updateFragranceMutation]);
+
+  // Flush pending saves on unmount
+  useEffect(() => {
+    return () => {
+      // Clear all timers
+      debounceTimers.current.forEach(timer => clearTimeout(timer));
+      
+      // Save all pending changes immediately
+      pendingData.current.forEach(data => {
+        updateFragranceMutation.mutate(data);
+      });
+      
+      debounceTimers.current.clear();
+      pendingData.current.clear();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on unmount
+
   const [fragrances, setFragrances] = useState<Record<number, Fragrance> | undefined>();
 
   useEffect(() => {
@@ -109,6 +226,7 @@ export function LoggedInLayout() {
   const [cardMode, setCardMode] = useState<FragranceCardMode>(getInitialFragranceCardMode());
 
   const onChange = useCallback((changedDynamicFragranceData: DynamicFragranceData) => {
+    // Immediately update cache optimistically
     queryClient.setQueryData(['dynamic-fragrance-data'], (oldData: { data: Record<number, DynamicFragranceData>; sha: string; } | undefined) => {
       if (!oldData) return oldData;
       return {
@@ -116,7 +234,10 @@ export function LoggedInLayout() {
         data: { ...oldData.data, [changedDynamicFragranceData.id]: changedDynamicFragranceData }
       };
     });
-  }, [queryClient]);
+    
+    // Debounce the actual save
+    debouncedSave(changedDynamicFragranceData);
+  }, [queryClient, debouncedSave]);
 
   return (
     <div className="min-h-screen bg-nav-bg">
