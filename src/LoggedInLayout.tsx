@@ -314,7 +314,7 @@ export function LoggedInLayout() {
       <form className="bg-card-bg p-6 rounded-lg shadow-lg w-80 border border-card-border text-card-fg">
         <div className="mb-6">
           <label className="block text-fg-base text-sm font-bold mb-2" htmlFor="newBrandQuery">
-            Brand
+            Marke
           </label>
           <input
             className={`
@@ -394,7 +394,7 @@ export function LoggedInLayout() {
             type="button"
             onClick={handleCreateNewFragrance}
           >
-            Log In
+            Duft Hinzufügen
           </button>
         </div>
       </form>
