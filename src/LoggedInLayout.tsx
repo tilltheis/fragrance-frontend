@@ -177,6 +177,11 @@ export function LoggedInLayout() {
           };
         });
       }
+
+      setPendingData((prev) => {
+        const { [changedDynamicFragranceData.id]: _, ...rest } = prev;
+        return rest;
+      });
     },
   });
 
@@ -205,10 +210,6 @@ export function LoggedInLayout() {
       if (dataToSave) {
         updateFragranceMutation.mutate(dataToSave);
         pendingDataRef.current.delete(fragranceId);
-        setPendingData((prev) => {
-          const { [fragranceId]: _, ...rest } = prev;
-          return rest;
-        });
       }
       debounceTimersRef.current.delete(fragranceId);
     }, delay);
