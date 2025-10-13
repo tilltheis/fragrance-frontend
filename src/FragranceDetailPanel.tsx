@@ -31,7 +31,7 @@ export function FragranceDetailPanel({ fragrance, onClose, onChange }: Fragrance
     </div>
   );
 
-  const NotesList = ({ notes, className }: { notes: string[], className?: string }) => (
+  const NotesList = ({ notes }: { notes: string[], className?: string }) => (
     <ul>
       {notes.map((note, index) => (
         <li key={index} className="inline-block text-sm not-last:after:content-[',\00a0'] after:text-fg-muted">

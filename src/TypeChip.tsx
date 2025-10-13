@@ -53,6 +53,7 @@ export type TypeChipProps = {
   percentage: number;
 };
 
+// @ts-ignore
 const writtenOutInlineTailwindClassesToGenerateUtilityClassesFor = [
   "bg-type-animalic-bg text-type-animalic-fg border-type-animalic-border",
   "bg-type-aquatic-bg text-type-aquatic-fg border-type-aquatic-border",

@@ -62,8 +62,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return session ? { status: "loggedIn", session } : { status: "loggedOut" };
   });
 
-  const login = useCallback(async ({ username, password }: { username: string; password: string }) => {
-    if (auth.status !== "loggedOut") return;
+  const login = useCallback(async ({ username, password }: { username: string; password: string }): Promise<boolean> => {
+    if (auth.status !== "loggedOut") return false;
     try {
       const [owner, repo] = username.split('/');
       if (!owner || !repo) throw new Error("Invalid repository format");

@@ -102,7 +102,7 @@ export function EditablePersonalRating({
             }}
           />
           <datalist id="seller-autocomplete">
-            {[...sellerOptions.difference(sellers ?? new Set())].map(s => (
+            {[...sellerOptions].filter(s => !(sellers ?? new Set()).has(s)).map(s => (
               <option key={s} value={s} />
             ))}
           </datalist>

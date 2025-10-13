@@ -12,7 +12,7 @@ export type StackedBarProps<T extends string> = {
 };
 
 export function StackedBar<T extends string>({ map = {}, orderedDisplayData, className }: StackedBarProps<T>) {
-  const total = Object.values(map).reduce((sum, count) => sum + count, 0);
+  const total = (Object.values(map) as Array<number>).reduce((sum, count) => sum + (count ?? 0), 0);
   const segments = orderedDisplayData
     .map(({ key, ...rest }) => {
       return {
