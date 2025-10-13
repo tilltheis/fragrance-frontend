@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { AppearanceSelector } from './AppearanceSelector';
 import { AuthForm } from './AuthForm';
 import { useSession } from './AuthProvider';
@@ -6,10 +6,7 @@ import { type FragranceCardMode } from './FragranceCard';
 import { FragranceCardModeSelector, getInitialFragranceCardMode } from './FragranceCardModeSelector';
 import { FragranceGrid } from './FragranceGrid';
 import { type DynamicFragranceData, type Fragrance } from './types';
-import { useFragranceData } from './hooks/useFragranceData';
-import { useFragranceMutation } from './hooks/useFragranceMutation';
-
-// debouncing handled in hooks
+import { useFragrances } from './useFragrance';
 
 function FragranceContent({
   isPending,
@@ -44,41 +41,13 @@ const MemoizedFragranceContent = React.memo(FragranceContent);
 
 export function LoggedInLayout() {
   const session = useSession();
-  const { staticData, staticPending, staticError, dynamicData, dynamicPending, dynamicError, octokit } = useFragranceData(session);
-
-  const { debouncedSave, pendingData } = useFragranceMutation(session, octokit);
-
-  const fragrancesRef = useRef<Record<number, Fragrance> | undefined>(undefined);
-
-  const fragrances = useMemo(() => {
-    if (!staticData || !dynamicData) {
-      fragrancesRef.current = undefined;
-      return undefined;
-    }
-
-    const combined: Record<number, Fragrance> = {};
-
-    for (const id in {...dynamicData, ...pendingData}) {
-      const newFragrance = { ...dynamicData[id], ...(pendingData[id] ?? {}) , ...(staticData[id] ?? {}) } as Fragrance;
-      if (fragrancesRef.current?.[id] && JSON.stringify(fragrancesRef.current[id]) === JSON.stringify(newFragrance)) {
-        combined[id] = fragrancesRef.current[id];
-      } else {
-        combined[id] = newFragrance;
-      }
-    }
-
-    fragrancesRef.current = combined;
-    return combined;
-  }, [staticData, dynamicData, pendingData]);
-
-  const isPending = staticPending || dynamicPending;
-  const error = staticError || dynamicError;
+  const { query: { fragrances, error, isPending }, mutation: { saveDynamicFragranceData, saveDynamicFragranceDataNow } } = useFragrances(session);
 
   const [cardMode, setCardMode] = useState<FragranceCardMode>(getInitialFragranceCardMode());
 
   const onChange = useCallback((changedDynamicFragranceData: DynamicFragranceData) => {
-    debouncedSave(changedDynamicFragranceData);
-  }, [debouncedSave]);
+    saveDynamicFragranceData(changedDynamicFragranceData);
+  }, [saveDynamicFragranceData]);
 
   const [newBrandQuery, setNewBrandQuery] = useState('');
   const [newNameQuery, setNewNameQuery] = useState('');
@@ -89,11 +58,8 @@ export function LoggedInLayout() {
     const nameQuery = newNameQuery.trim();
     if (!brandQuery || !nameQuery) return;
 
-    // Find next available id
-    const allIds = [
-      ...(staticData ? Object.keys(staticData) : []),
-      ...(dynamicData ? Object.keys(dynamicData) : []),
-    ].map(Number);
+    // Find next available id from merged fragrances
+    const allIds = fragrances ? Object.keys(fragrances).map(Number) : [];
     const nextId = allIds.length > 0 ? Math.max(...allIds) + 1 : 1;
 
     const newDynamicFragrance: DynamicFragranceData = {
@@ -102,7 +68,7 @@ export function LoggedInLayout() {
       nameQuery,
     };
 
-    debouncedSave(newDynamicFragrance, 0);
+    saveDynamicFragranceDataNow(newDynamicFragrance);
 
     setNewBrandQuery('');
     setNewNameQuery('');
