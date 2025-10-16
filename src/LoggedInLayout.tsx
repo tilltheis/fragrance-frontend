@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { AppearanceSelector } from './AppearanceSelector';
 import { AuthForm } from './AuthForm';
 import { useSession } from './AuthProvider';
@@ -17,7 +17,7 @@ function FragranceContent({
 }: {
   isPending: boolean;
   error: Error | null | undefined;
-  fragrances: Record<number, Fragrance> | undefined;
+  fragrances: Fragrance[] | undefined;
   cardMode: FragranceCardMode;
   onChange?: (changedDynamicFragranceData: DynamicFragranceData) => void;
 }) {
@@ -31,7 +31,7 @@ function FragranceContent({
       </div>
     );
   }
-  if (Object.keys(fragrances).length === 0) {
+  if (fragrances.length === 0) {
     return <div className="text-fg-base">Keine Düfte gefunden.</div>;
   }
   return <FragranceGrid fragrances={fragrances} cardMode={cardMode} onChange={onChange} />;
@@ -42,6 +42,10 @@ const MemoizedFragranceContent = React.memo(FragranceContent);
 export function LoggedInLayout() {
   const session = useSession();
   const { query: { fragrances, error, isPending }, mutation: { saveDynamicFragranceData, saveDynamicFragranceDataNow } } = useFragrances(session);
+  const sortedFragrances = useMemo(() => {
+    if (!fragrances) return fragrances;
+    return Object.values(fragrances).sort((a, b) => b.id - a.id);
+  }, [fragrances]);
 
   const [cardMode, setCardMode] = useState<FragranceCardMode>(getInitialFragranceCardMode());
 
@@ -184,7 +188,7 @@ export function LoggedInLayout() {
         <MemoizedFragranceContent
           isPending={isPending}
           error={error}
-          fragrances={fragrances}
+          fragrances={sortedFragrances}
           cardMode={cardMode}
           onChange={onChange}
         />

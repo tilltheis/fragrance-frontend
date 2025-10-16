@@ -7,7 +7,7 @@ const MemoizedFragranceDetailPanel = React.memo(FragranceDetailPanel);
 const MemoizedFragranceCard = React.memo(FragranceCard);
 
 type FragranceGridProps = {
-  fragrances: Record<number, Fragrance>;
+  fragrances: Fragrance[];
   cardMode: FragranceCardMode;
   onChange?: (changedDynamicFragranceData: DynamicFragranceData) => void;
 };
@@ -22,7 +22,7 @@ export function FragranceGrid({ fragrances, cardMode, onChange }: FragranceGridP
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 grid-flow-row-dense">
-      {Object.values(fragrances).map((fragrance) => (
+      {fragrances.map((fragrance) => (
         selectedFragranceId === fragrance.id ? (
           <MemoizedFragranceDetailPanel
             key={fragrance.id}
