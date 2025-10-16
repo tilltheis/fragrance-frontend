@@ -88,7 +88,7 @@ export function FragranceCard({ fragrance, mode, onSelect }: CardProps) {
         <h4 className="text-sm font-semibold leading-tight text-card-fg">
           {fragrance.brand || fragrance.brandQuery}
         </h4>
-        <h3 className="text-lg font-semibold text-card-fg">
+        <h3 className="text-lg font-semibold text-card-fg truncate" title={fragrance.name || fragrance.nameQuery}>
           {fragrance.name || fragrance.nameQuery}
         </h3>
           <p className="text-sm text-fg-muted">
