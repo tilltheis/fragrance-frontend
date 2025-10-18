@@ -25,7 +25,7 @@ export function FragranceCard({ fragrance, mode, onSelect }: CardProps) {
         <div className="text-xs text-fg-muted mb-1">Anlass</div>
         <OccasionBar map={fragrance.occasion} />
       </div>
-      
+
       <div className="mb-2">
         <div className="text-xs text-fg-muted mb-1">Community-Wertung</div>
         <CommunityRatings fragrance={fragrance} />
@@ -33,7 +33,7 @@ export function FragranceCard({ fragrance, mode, onSelect }: CardProps) {
     </div>
   );
 
-  const NotesList = ({ notes, className }: { notes: string[], className?: string }) => (
+  const NotesList = ({ notes, className }: { notes: string[]; className?: string }) => (
     <ul title={notes.join(', ')} className={`h-5 overflow-x-clip whitespace-nowrap text-ellipsis ${className ?? ''}`}>
       {notes.map((note, index) => (
         <li key={index} className="inline text-sm not-last:after:content-[',\00a0'] after:text-fg-muted">
@@ -69,12 +69,12 @@ export function FragranceCard({ fragrance, mode, onSelect }: CardProps) {
 
   const NotesView = () => {
     switch (fragrance.notes?.kind) {
-      case "pyramid":
+      case 'pyramid':
         return PyramidNotesView(fragrance.notes);
-      case "linear":
+      case 'linear':
         return LinearNotesView(fragrance.notes);
       default:
-        return PyramidNotesView({ kind: "pyramid", head: [], heart: [], base: [] });
+        return PyramidNotesView({ kind: 'pyramid', head: [], heart: [], base: [] });
     }
   };
 
@@ -85,15 +85,11 @@ export function FragranceCard({ fragrance, mode, onSelect }: CardProps) {
     >
       {/* Header */}
       <div className="mb-2">
-        <h4 className="text-sm font-semibold leading-tight text-card-fg">
-          {fragrance.brand || fragrance.brandQuery}
-        </h4>
+        <h4 className="text-sm font-semibold leading-tight text-card-fg">{fragrance.brand || fragrance.brandQuery}</h4>
         <h3 className="text-lg font-semibold text-card-fg truncate" title={fragrance.name || fragrance.nameQuery}>
           {fragrance.name || fragrance.nameQuery}
         </h3>
-          <p className="text-sm text-fg-muted">
-            {fragrance.concentration ?? "\u00A0"}
-          </p>
+        <p className="text-sm text-fg-muted">{fragrance.concentration ?? '\u00A0'}</p>
       </div>
 
       <TypeChips className="mb-2" typeMap={fragrance.type} />
@@ -101,7 +97,11 @@ export function FragranceCard({ fragrance, mode, onSelect }: CardProps) {
 
       <div className="mb-2">
         <div className="text-xs text-fg-muted mb-1">Persönliche Wertung</div>
-        <RatingBar label="❤️️" value={fragrance.rating ? Math.round(fragrance.rating * 100) : undefined} classNames={{ track: "bg-meter-rating-track", fill: "bg-meter-rating-fill" }} />
+        <RatingBar
+          label="❤️️"
+          value={fragrance.rating ? Math.round(fragrance.rating * 100) : undefined}
+          classNames={{ track: 'bg-meter-rating-track', fill: 'bg-meter-rating-fill' }}
+        />
       </div>
     </div>
   );

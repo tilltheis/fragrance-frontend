@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 
 type Appearance = 'light' | 'dark' | 'system';
 
@@ -24,7 +24,8 @@ export function AppearanceSelector({ className }: AppearanceSelectorProps) {
     } else {
       window.localStorage.setItem(APPEARANCE_KEY, appearance);
     }
-    const isDark = appearance === 'dark' || (appearance === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    const isDark =
+      appearance === 'dark' || (appearance === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
     document.documentElement.classList.toggle('dark', isDark);
 
     // Listen for system changes if system mode
@@ -44,19 +45,22 @@ export function AppearanceSelector({ className }: AppearanceSelectorProps) {
     };
   }, [appearance]);
 
-  const appearanceOptions =
-    [['light', '☀️', 'Helles Design'],
+  const appearanceOptions = [
+    ['light', '☀️', 'Helles Design'],
     ['system', '🖥️', 'Systemeinstellung'],
-    ['dark', '🌙', 'Dunkles Design']] as const;
+    ['dark', '🌙', 'Dunkles Design'],
+  ] as const;
 
   const leftMap = {
     light: 'left-0',
     system: 'left-10',
     dark: 'left-20',
-  }
+  };
 
   return (
-    <div className={`w-30 flex items-center justify-center rounded bg-toggle-off border-input-border relative ${className ?? ''}`}>
+    <div
+      className={`w-30 flex items-center justify-center rounded bg-toggle-off border-input-border relative ${className ?? ''}`}
+    >
       <div className={`w-10 h-8 rounded bg-toggle-on absolute top-0 transition-all ${leftMap[appearance]}`} />
       {appearanceOptions.map(([mode, icon, label]) => (
         <button

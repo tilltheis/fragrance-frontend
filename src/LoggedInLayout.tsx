@@ -41,7 +41,10 @@ const MemoizedFragranceContent = React.memo(FragranceContent);
 
 export function LoggedInLayout() {
   const session = useSession();
-  const { query: { fragrances, error, isPending }, mutation: { saveDynamicFragranceData, saveDynamicFragranceDataNow } } = useFragrances(session);
+  const {
+    query: { fragrances, error, isPending },
+    mutation: { saveDynamicFragranceData, saveDynamicFragranceDataNow },
+  } = useFragrances(session);
   const sortedFragrances = useMemo(() => {
     if (!fragrances) return fragrances;
     return Object.values(fragrances).sort((a, b) => b.id - a.id);
@@ -49,9 +52,12 @@ export function LoggedInLayout() {
 
   const [cardMode, setCardMode] = useState<FragranceCardMode>(getInitialFragranceCardMode());
 
-  const onChange = useCallback((changedDynamicFragranceData: DynamicFragranceData) => {
-    saveDynamicFragranceData(changedDynamicFragranceData);
-  }, [saveDynamicFragranceData]);
+  const onChange = useCallback(
+    (changedDynamicFragranceData: DynamicFragranceData) => {
+      saveDynamicFragranceData(changedDynamicFragranceData);
+    },
+    [saveDynamicFragranceData]
+  );
 
   const [newBrandQuery, setNewBrandQuery] = useState('');
   const [newNameQuery, setNewNameQuery] = useState('');
@@ -82,9 +88,7 @@ export function LoggedInLayout() {
     <div className="min-h-screen bg-nav-bg">
       <header className="max-w-7xl mx-auto px-4 py-4 md:flex md:justify-between md:items-center">
         <div>
-          <h1 className="text-2xl font-bold text-nav-fg">
-            Duftsammlung
-          </h1>
+          <h1 className="text-2xl font-bold text-nav-fg">Duftsammlung</h1>
           <p className="text-fg-muted mt-1 h-6">
             {fragrances && `${Object.keys(fragrances).length} Düfte in der Sammlung`}
           </p>

@@ -18,7 +18,7 @@ export function StackedBar<T extends string>({ map = {}, orderedDisplayData, cla
       return {
         ...rest,
         key,
-        percentage: ((map[key] ?? 0) / total) * 100
+        percentage: ((map[key] ?? 0) / total) * 100,
       };
     })
     .filter(({ percentage }) => percentage > 0);

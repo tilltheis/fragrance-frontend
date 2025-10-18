@@ -22,7 +22,7 @@ export function FragranceGrid({ fragrances, cardMode, onChange }: FragranceGridP
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 grid-flow-row-dense">
-      {fragrances.map((fragrance) => (
+      {fragrances.map((fragrance) =>
         selectedFragranceId === fragrance.id ? (
           <MemoizedFragranceDetailPanel
             key={fragrance.id}
@@ -31,14 +31,9 @@ export function FragranceGrid({ fragrances, cardMode, onChange }: FragranceGridP
             onChange={onChange}
           />
         ) : (
-          <MemoizedFragranceCard
-            mode={cardMode}
-            key={fragrance.id}
-            fragrance={fragrance}
-            onSelect={handleSelect}
-          />
+          <MemoizedFragranceCard mode={cardMode} key={fragrance.id} fragrance={fragrance} onSelect={handleSelect} />
         )
-      ))}
+      )}
     </div>
   );
 }

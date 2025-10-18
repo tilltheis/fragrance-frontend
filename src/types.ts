@@ -1,7 +1,7 @@
 // Central types and color/icon mappings for the perfume app
 
 export const BUCKETS = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100] as const;
-export type BucketKey = typeof BUCKETS[number];
+export type BucketKey = (typeof BUCKETS)[number];
 export type BucketDistribution = Partial<Record<BucketKey, number>>;
 
 export interface DistributionStats {
@@ -13,33 +13,51 @@ export interface DistributionStats {
   count: number;
 }
 
-export const SEASONS = ["Frühling", "Sommer", "Herbst", "Winter"] as const;
-export type SeasonKey = typeof SEASONS[number];
+export const SEASONS = ['Frühling', 'Sommer', 'Herbst', 'Winter'] as const;
+export type SeasonKey = (typeof SEASONS)[number];
 export type SeasonMap = Partial<Record<SeasonKey, number>>;
 
-export const OCCASIONS = ["Täglich", "Sport", "Freizeit", "Ausgehen", "Arbeit", "Abend"] as const;
-export type OccasionKey = typeof OCCASIONS[number];
+export const OCCASIONS = ['Täglich', 'Sport', 'Freizeit', 'Ausgehen', 'Arbeit', 'Abend'] as const;
+export type OccasionKey = (typeof OCCASIONS)[number];
 export type OccasionMap = Partial<Record<OccasionKey, number>>;
 
 export const TYPES = [
-  "Animalisch", "Aquatisch", "Blumig", "Chypre", "Cremig", "Erdig", "Fougère", "Frisch",
-  "Fruchtig", "Gourmand", "Grün", "Harzig", "Holzig", "Ledrig", "Orientalisch", "Pudrig",
-  "Rauchig", "Synthetisch", "Süß", "Würzig", "Zitrus",
+  'Animalisch',
+  'Aquatisch',
+  'Blumig',
+  'Chypre',
+  'Cremig',
+  'Erdig',
+  'Fougère',
+  'Frisch',
+  'Fruchtig',
+  'Gourmand',
+  'Grün',
+  'Harzig',
+  'Holzig',
+  'Ledrig',
+  'Orientalisch',
+  'Pudrig',
+  'Rauchig',
+  'Synthetisch',
+  'Süß',
+  'Würzig',
+  'Zitrus',
 ] as const;
-export type TypeKey = typeof TYPES[number];
+export type TypeKey = (typeof TYPES)[number];
 export type TypeMap = Partial<Record<TypeKey, number>>;
 
 export type Notes = PyramidNotes | LinearNotes;
 
 export interface PyramidNotes {
-  kind: "pyramid";
+  kind: 'pyramid';
   head: string[];
   heart: string[];
   base: string[];
 }
 
 export interface LinearNotes {
-  kind: "linear";
+  kind: 'linear';
   notes: string[];
 }
 
@@ -81,21 +99,71 @@ export interface Fragrance {
   updatedAt?: Date;
 }
 
-export type StaticFragranceData = Pick<Fragrance, 'id' | 'brand' | 'name' | 'concentration' | 'scent' | 'longevity' | 'sillage' | 'pricing' | 'season' | 'occasion' | 'type' | 'notes' | 'createdAt'>;
-export type DynamicFragranceData = Pick<Fragrance, 'id' | 'brandQuery' | 'nameQuery' | 'rating' | 'reason' | 'comment' | 'sellers' | 'owned' | 'firstTestedAt' | 'updatedAt'>;
+export type StaticFragranceData = Pick<
+  Fragrance,
+  | 'id'
+  | 'brand'
+  | 'name'
+  | 'concentration'
+  | 'scent'
+  | 'longevity'
+  | 'sillage'
+  | 'pricing'
+  | 'season'
+  | 'occasion'
+  | 'type'
+  | 'notes'
+  | 'createdAt'
+>;
+export type DynamicFragranceData = Pick<
+  Fragrance,
+  | 'id'
+  | 'brandQuery'
+  | 'nameQuery'
+  | 'rating'
+  | 'reason'
+  | 'comment'
+  | 'sellers'
+  | 'owned'
+  | 'firstTestedAt'
+  | 'updatedAt'
+>;
 
 export function toStaticFragranceData(x: Fragrance): StaticFragranceData {
   const {
-    id, brand, name, concentration, scent, longevity, sillage, pricing,
-    season, occasion, type, notes, createdAt
+    id,
+    brand,
+    name,
+    concentration,
+    scent,
+    longevity,
+    sillage,
+    pricing,
+    season,
+    occasion,
+    type,
+    notes,
+    createdAt,
   } = x;
-  return { id, brand, name, concentration, scent, longevity, sillage, pricing, season, occasion, type, notes, createdAt };
+  return {
+    id,
+    brand,
+    name,
+    concentration,
+    scent,
+    longevity,
+    sillage,
+    pricing,
+    season,
+    occasion,
+    type,
+    notes,
+    createdAt,
+  };
 }
 
 export function toDynamicFragranceData(x: Fragrance): DynamicFragranceData {
-  const {
-    id, brandQuery, nameQuery, rating, reason, comment, sellers, owned, firstTestedAt, updatedAt
-  } = x;
+  const { id, brandQuery, nameQuery, rating, reason, comment, sellers, owned, firstTestedAt, updatedAt } = x;
   return { id, brandQuery, nameQuery, rating, reason, comment, sellers, owned, firstTestedAt, updatedAt };
 }
 
@@ -151,10 +219,15 @@ export function parseStaticFragranceData(item: any): StaticFragranceData {
     season: item.season || undefined,
     occasion: item.occasion || undefined,
     type: item.type || undefined,
-    notes: item.structure === "pyramid"
-      ? ((item.head || item.heart || item.base)
-        && { kind: "pyramid", head: item.head ?? [], heart: item.heart ?? [], base: item.base ?? [] })
-      : (item.structure === "linear" && (item.notes && { kind: "linear", notes: item.notes })),
+    notes:
+      item.structure === 'pyramid'
+        ? (item.head || item.heart || item.base) && {
+            kind: 'pyramid',
+            head: item.head ?? [],
+            heart: item.heart ?? [],
+            base: item.base ?? [],
+          }
+        : item.structure === 'linear' && item.notes && { kind: 'linear', notes: item.notes },
     createdAt: item.createdAt ? new Date(item.createdAt) : new Date(),
   };
 }
@@ -180,20 +253,19 @@ export interface ViewState {
 
 export type EmojiColor = { light: string; dark: string; emoji: string };
 
-
 // Color and icon mappings
 export const SEASON_COLORS: Record<SeasonKey, EmojiColor> = {
-  "Frühling": { light: "#34D399", dark: "#6EE7B7", emoji: "🌱" },
-  "Sommer": { light: "#FBBF24", dark: "#FACC15", emoji: "☀️" },
-  "Herbst": { light: "#F97316", dark: "#FB923C", emoji: "🍂" },
-  "Winter": { light: "#60A5FA", dark: "#93C5FD", emoji: "❄️" }
+  Frühling: { light: '#34D399', dark: '#6EE7B7', emoji: '🌱' },
+  Sommer: { light: '#FBBF24', dark: '#FACC15', emoji: '☀️' },
+  Herbst: { light: '#F97316', dark: '#FB923C', emoji: '🍂' },
+  Winter: { light: '#60A5FA', dark: '#93C5FD', emoji: '❄️' },
 } as const;
 
 export const OCCASION_COLORS: Record<OccasionKey, EmojiColor> = {
-  "Täglich": { light: "#9CA3AF", dark: "#D1D5DB", emoji: "📅" },
-  "Sport": { light: "#10B981", dark: "#34D399", emoji: "🏃" },
-  "Freizeit": { light: "#3B82F6", dark: "#60A5FA", emoji: "🎮" },
-  "Ausgehen": { light: "#EC4899", dark: "#F472B6", emoji: "✨" },
-  "Arbeit": { light: "#6366F1", dark: "#818CF8", emoji: "💼" },
-  "Abend": { light: "#F59E0B", dark: "#FBBF24", emoji: "🌙" }
+  Täglich: { light: '#9CA3AF', dark: '#D1D5DB', emoji: '📅' },
+  Sport: { light: '#10B981', dark: '#34D399', emoji: '🏃' },
+  Freizeit: { light: '#3B82F6', dark: '#60A5FA', emoji: '🎮' },
+  Ausgehen: { light: '#EC4899', dark: '#F472B6', emoji: '✨' },
+  Arbeit: { light: '#6366F1', dark: '#818CF8', emoji: '💼' },
+  Abend: { light: '#F59E0B', dark: '#FBBF24', emoji: '🌙' },
 } as const;

@@ -1,7 +1,13 @@
 import { TypeChips } from './TypeChips';
 import { SeasonBar } from './SeasonBar';
 import { OccasionBar } from './OccasionBar';
-import { toDynamicFragranceData, type DynamicFragranceData, type Fragrance, type LinearNotes, type PyramidNotes } from './types';
+import {
+  toDynamicFragranceData,
+  type DynamicFragranceData,
+  type Fragrance,
+  type LinearNotes,
+  type PyramidNotes,
+} from './types';
 import { CommunityRatings } from './CommunityRatings';
 import { EditablePersonalRating } from './EditablePersonalRating';
 
@@ -31,7 +37,7 @@ export function FragranceDetailPanel({ fragrance, onClose, onChange }: Fragrance
     </div>
   );
 
-  const NotesList = ({ notes }: { notes: string[], className?: string }) => (
+  const NotesList = ({ notes }: { notes: string[]; className?: string }) => (
     <ul>
       {notes.map((note, index) => (
         <li key={index} className="inline-block text-sm not-last:after:content-[',\00a0'] after:text-fg-muted">
@@ -67,12 +73,12 @@ export function FragranceDetailPanel({ fragrance, onClose, onChange }: Fragrance
 
   const NotesView = () => {
     switch (fragrance.notes?.kind) {
-      case "pyramid":
+      case 'pyramid':
         return PyramidNotesView(fragrance.notes);
-      case "linear":
+      case 'linear':
         return LinearNotesView(fragrance.notes);
       default:
-        return PyramidNotesView({ kind: "pyramid", head: [], heart: [], base: [] });
+        return PyramidNotesView({ kind: 'pyramid', head: [], heart: [], base: [] });
     }
   };
 
@@ -92,10 +98,10 @@ export function FragranceDetailPanel({ fragrance, onClose, onChange }: Fragrance
 
       overflow-scroll
       "
-
       onClick={() => onClose?.(fragrance)}
     >
-      <div className="
+      <div
+        className="
       landscape:max-md:absolute
       landscape:max-md:top-0
       landscape:max-md:right-0
@@ -108,8 +114,10 @@ export function FragranceDetailPanel({ fragrance, onClose, onChange }: Fragrance
       
       max-md:z-2
       max-md:h-full
-      ">
-        <div className="
+      "
+      >
+        <div
+          className="
       max-md:m-4
 
       bg-card-bg
@@ -120,22 +128,22 @@ export function FragranceDetailPanel({ fragrance, onClose, onChange }: Fragrance
       p-4
       shadow-sm
       "
-
           onClick={(e) => e.stopPropagation()}
         >
-          <button onClick={() => onClose?.(fragrance)} className="absolute top-2 right-2 text-fg-muted hover:text-fg-accent">X</button>
+          <button
+            onClick={() => onClose?.(fragrance)}
+            className="absolute top-2 right-2 text-fg-muted hover:text-fg-accent"
+          >
+            X
+          </button>
 
           {/* Header */}
           <div className="mb-2">
             <h4 className="text-sm font-semibold leading-tight text-card-fg">
               {fragrance.brand || fragrance.brandQuery}
             </h4>
-            <h3 className="text-lg font-semibold text-card-fg">
-              {fragrance.name || fragrance.nameQuery}
-            </h3>
-            <p className="text-sm text-fg-muted">
-              {fragrance.concentration ?? "\u00A0"}
-            </p>
+            <h3 className="text-lg font-semibold text-card-fg">{fragrance.name || fragrance.nameQuery}</h3>
+            <p className="text-sm text-fg-muted">{fragrance.concentration ?? '\u00A0'}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -147,7 +155,9 @@ export function FragranceDetailPanel({ fragrance, onClose, onChange }: Fragrance
 
             <EditablePersonalRating
               data={toDynamicFragranceData(fragrance)}
-              sellerOptions={new Set(["Douglas", "Flaconi", "Parfumdreams", "Notino", "Sephora", "Müller", "Rossmann", "dm"])}
+              sellerOptions={
+                new Set(['Douglas', 'Flaconi', 'Parfumdreams', 'Notino', 'Sephora', 'Müller', 'Rossmann', 'dm'])
+              }
               onChange={onChange}
             />
           </div>

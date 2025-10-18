@@ -1,13 +1,13 @@
-import { useState } from "react";
-import { useAuth, type LoggedInAuth, type LoggedOutAuth } from "./AuthProvider";
+import { useState } from 'react';
+import { useAuth, type LoggedInAuth, type LoggedOutAuth } from './AuthProvider';
 
 type LoginFormProps = {
   auth: LoggedOutAuth;
 };
 
 function LoginForm({ auth }: LoginFormProps) {
-  const [username, setUsername] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
+  const [username, setUsername] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
   const [isError, setIsError] = useState<boolean>(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -110,8 +110,8 @@ function LoginForm({ auth }: LoginFormProps) {
           </button>
         </div>
       </form>
-    </div>  
-  )
+    </div>
+  );
 }
 
 type LogoutFormProps = {
@@ -153,8 +153,10 @@ export function AuthForm() {
   const auth = useAuth();
 
   switch (auth.status) {
-    case "loggedIn": return <LogoutForm auth={auth} />;
-    case "loggedOut": return <LoginForm auth={auth} />;
+    case 'loggedIn':
+      return <LogoutForm auth={auth} />;
+    case 'loggedOut':
+      return <LoginForm auth={auth} />;
     default: {
       const _exhaustive: never = auth;
       return _exhaustive;

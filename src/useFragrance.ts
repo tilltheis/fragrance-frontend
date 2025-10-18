@@ -35,13 +35,19 @@ export function useFragrances(session: Session): UseFragranceResult {
   const octokit = useMemo(() => new Octokit({ auth: session.accessToken }), [session]);
   const queryClient = useQueryClient();
 
-  async function fetchAndParseJsonl<T>(path: string, parser: (value: any) => T): Promise<{ data: Record<number, T>; sha: string }> {
+  async function fetchAndParseJsonl<T>(
+    path: string,
+    parser: (value: any) => T
+  ): Promise<{ data: Record<number, T>; sha: string }> {
     const { data } = await octokit.rest.repos.getContent({ owner: session.owner, repo: session.repo, path });
     if (!('content' in data) || typeof data.content !== 'string' || !('sha' in data)) {
       throw new Error(`${path}: Missing or invalid content or sha field in GitHub API response`);
     }
-    const decodedContent = new TextDecoder('utf-8').decode(Uint8Array.from(atob(data.content), c => c.charCodeAt(0)));
-    const items = decodedContent.split('\n').filter(l => l.trim()).map(l => JSON.parse(l));
+    const decodedContent = new TextDecoder('utf-8').decode(Uint8Array.from(atob(data.content), (c) => c.charCodeAt(0)));
+    const items = decodedContent
+      .split('\n')
+      .filter((l) => l.trim())
+      .map((l) => JSON.parse(l));
     const parsed: Record<number, T> = {};
     for (const item of items) parsed[Number(item.id)] = parser(item);
     return { data: parsed, sha: (data as any).sha };
@@ -59,14 +65,17 @@ export function useFragrances(session: Session): UseFragranceResult {
 
   // mutation (writes encoded JSONL back to repo)
   async function saveDynamicFragranceData(updatedDynamicData: DynamicFragranceData) {
-    const currentDynamicDataWithSha = queryClient.getQueryData<{ data: Record<number, DynamicFragranceData>; sha: string }>(['dynamic-fragrance-data']);
+    const currentDynamicDataWithSha = queryClient.getQueryData<{
+      data: Record<number, DynamicFragranceData>;
+      sha: string;
+    }>(['dynamic-fragrance-data']);
     if (!currentDynamicDataWithSha) throw new Error('No dynamic fragrance data in cache');
 
     const updatedData = { ...currentDynamicDataWithSha.data, [updatedDynamicData.id]: updatedDynamicData };
 
     const jsonlContent = Object.values(updatedData)
       .sort((a, b) => a.id - b.id)
-      .map(item => {
+      .map((item) => {
         const sortedItem = Object.fromEntries(
           Object.entries(item)
             .sort(([a], [b]) => a.localeCompare(b))
@@ -81,15 +90,19 @@ export function useFragrances(session: Session): UseFragranceResult {
       .join('\n');
     const encodedContent = btoa(String.fromCharCode(...new TextEncoder().encode(jsonlContent)));
 
-    const actualDynamicDataChanges =
-      Object.entries(updatedDynamicData)
-        .sort(([a], [b]) => a.localeCompare(b))
-        .filter(([key, value]) => {
-          const currentValue = currentDynamicDataWithSha.data[updatedDynamicData.id]?.[key as keyof DynamicFragranceData];
-          if (value instanceof Set) return !(currentValue instanceof Set) || value.size !== currentValue.size || [...value].some(v => !currentValue.has(v));
-          if (value instanceof Date) return !(currentValue instanceof Date) || value.getTime() !== currentValue.getTime();
-          return value !== currentValue;
-        });
+    const actualDynamicDataChanges = Object.entries(updatedDynamicData)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .filter(([key, value]) => {
+        const currentValue = currentDynamicDataWithSha.data[updatedDynamicData.id]?.[key as keyof DynamicFragranceData];
+        if (value instanceof Set)
+          return (
+            !(currentValue instanceof Set) ||
+            value.size !== currentValue.size ||
+            [...value].some((v) => !currentValue.has(v))
+          );
+        if (value instanceof Date) return !(currentValue instanceof Date) || value.getTime() !== currentValue.getTime();
+        return value !== currentValue;
+      });
 
     if (actualDynamicDataChanges.length === 0) {
       return Promise.resolve({ data: { content: { sha: currentDynamicDataWithSha.sha } } });
@@ -118,14 +131,21 @@ export function useFragrances(session: Session): UseFragranceResult {
     onSuccess: (response: any, changedDynamicFragranceData: DynamicFragranceData) => {
       const newSha = response.data.content?.sha;
       if (newSha) {
-        queryClient.setQueryData<{ data: Record<number, DynamicFragranceData>; sha: string; }>(['dynamic-fragrance-data'], (oldData) => {
-          if (!oldData) return oldData;
-          return { ...oldData, data: { ...oldData.data, [changedDynamicFragranceData.id]: changedDynamicFragranceData }, sha: newSha };
-        });
+        queryClient.setQueryData<{ data: Record<number, DynamicFragranceData>; sha: string }>(
+          ['dynamic-fragrance-data'],
+          (oldData) => {
+            if (!oldData) return oldData;
+            return {
+              ...oldData,
+              data: { ...oldData.data, [changedDynamicFragranceData.id]: changedDynamicFragranceData },
+              sha: newSha,
+            };
+          }
+        );
       }
 
       // clear pending state for this id
-      setPendingData(prev => {
+      setPendingData((prev) => {
         const { [changedDynamicFragranceData.id]: _, ...rest } = prev;
         return rest;
       });
@@ -141,7 +161,7 @@ export function useFragrances(session: Session): UseFragranceResult {
   const debouncedMutate = useCallback((updatedDynamicData: DynamicFragranceData, delay: number = DEBOUNCE_DELAY_MS) => {
     const fragranceId = updatedDynamicData.id;
     pendingDataRef.current.set(fragranceId, updatedDynamicData);
-    setPendingData(prev => ({ ...prev, [fragranceId]: updatedDynamicData }));
+    setPendingData((prev) => ({ ...prev, [fragranceId]: updatedDynamicData }));
 
     const existingTimer = debounceTimersRef.current.get(fragranceId);
     if (existingTimer) window.clearTimeout(existingTimer as unknown as number);
@@ -161,8 +181,8 @@ export function useFragrances(session: Session): UseFragranceResult {
   // flush on unmount
   useEffect(() => {
     return () => {
-      debounceTimersRef.current.forEach(timer => clearTimeout(timer));
-      pendingDataRef.current.forEach(data => mutation.mutate(data));
+      debounceTimersRef.current.forEach((timer) => clearTimeout(timer));
+      pendingDataRef.current.forEach((data) => mutation.mutate(data));
       debounceTimersRef.current.clear();
       pendingDataRef.current.clear();
     };
@@ -179,8 +199,8 @@ export function useFragrances(session: Session): UseFragranceResult {
 
     const combined: Record<number, Fragrance> = {};
 
-    for (const id in {...dynamicData, ...pendingData}) {
-      const newFragrance = { ...dynamicData[id], ...(pendingData[id] ?? {}) , ...(staticData[id] ?? {}) } as Fragrance;
+    for (const id in { ...dynamicData, ...pendingData }) {
+      const newFragrance = { ...dynamicData[id], ...(pendingData[id] ?? {}), ...(staticData[id] ?? {}) } as Fragrance;
       if (fragrancesRef.current?.[id] && JSON.stringify(fragrancesRef.current[id]) === JSON.stringify(newFragrance)) {
         combined[id] = fragrancesRef.current[id];
       } else {

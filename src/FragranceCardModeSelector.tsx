@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import type { FragranceCardMode } from "./FragranceCard";
+import { useEffect } from 'react';
+import type { FragranceCardMode } from './FragranceCard';
 
 const FRAGRANCE_VIEW_KEY = 'appearance-setting';
 
@@ -22,9 +22,10 @@ export function FragranceCardModeSelector({ value, onChange, className }: Fragra
     onChange?.(value);
   }, [value, onChange]);
 
-  const fragranceCardModeOptions =
-    [['communityStats', '📊️', 'Community-Wertungen'],
-    ['scentNotes', '️🌿', 'Duftnoten']] as const;
+  const fragranceCardModeOptions = [
+    ['communityStats', '📊️', 'Community-Wertungen'],
+    ['scentNotes', '️🌿', 'Duftnoten'],
+  ] as const;
 
   const leftMap = {
     communityStats: 'left-0',
@@ -32,7 +33,9 @@ export function FragranceCardModeSelector({ value, onChange, className }: Fragra
   };
 
   return (
-    <div className={`w-30 flex items-center justify-center rounded bg-toggle-off border-input-border relative ${className ?? ''}`}>
+    <div
+      className={`w-30 flex items-center justify-center rounded bg-toggle-off border-input-border relative ${className ?? ''}`}
+    >
       <div className={`w-15 h-8 rounded bg-toggle-on absolute top-0 transition-all ${leftMap[value]}`} />
       {fragranceCardModeOptions.map(([mode, icon, label]) => (
         <button

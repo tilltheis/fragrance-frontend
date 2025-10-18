@@ -13,20 +13,24 @@ interface RatingBarProps {
 
 export function RatingBar({ label, value, className, classNames }: RatingBarProps) {
   const width = value === undefined ? 0 : `${value}%`;
-  const formattedValue = value === undefined ? "—" : value;
+  const formattedValue = value === undefined ? '—' : value;
   return (
     <div className={`flex-1 relative h-5 ${className ?? ''}`}>
       <div className={`absolute inset-0 rounded ${classNames?.track ?? ''}`} />
       <div
         className={`absolute left-0 top-0 h-full rounded ${classNames?.fill ?? ''}`}
-        style={{ width, transition: "width 0.3s" }}
+        style={{ width, transition: 'width 0.3s' }}
       />
       <div
         className={`absolute inset-0 flex items-center justify-center text-xs text-fg-on-meter ${classNames?.text ?? ''}`}
       >
         <span className={`mr-1 text-shadow-[0_0px_2px_#000,0_1px_2px_#000] ${classNames?.label ?? ''}`}>{label}</span>
-        <span className={`text-shadow-[0_0px_2px_#fff,0_1px_2px_#fff] dark:text-shadow-[0_0px_2px_#000,0_1px_2px_#000] ${classNames?.value ?? ''}`}>{formattedValue}%</span>
+        <span
+          className={`text-shadow-[0_0px_2px_#fff,0_1px_2px_#fff] dark:text-shadow-[0_0px_2px_#000,0_1px_2px_#000] ${classNames?.value ?? ''}`}
+        >
+          {formattedValue}%
+        </span>
       </div>
     </div>
   );
-};
+}
