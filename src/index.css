@@ -1,5 +1,26 @@
 @import 'tailwindcss';
 
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes slide-in-right {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slide-down {
+  from { transform: translateY(-12px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@theme {
+  --animate-slide-up: slide-up 0.25s ease;
+  --animate-slide-in-right: slide-in-right 0.25s ease;
+  --animate-slide-down: slide-down 0.2s ease;
+}
+
 @utility global-scroll-lock {
   --global-scroll-lock: 1;
 }

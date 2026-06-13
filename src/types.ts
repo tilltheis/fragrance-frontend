@@ -247,6 +247,32 @@ export function parseDynamicFragranceData(item: any): DynamicFragranceData {
   };
 }
 
+export type QuickViewKey = 'bestRated' | 'owned' | 'tested';
+
+export type SeasonThreshold = '20' | '40' | 'top';
+
+export type SortKey =
+  | 'newest'
+  | 'ratingDesc'
+  | 'testedDesc'
+  | 'editedDesc'
+  | 'brandAsc'
+  | 'nameAsc';
+
+export interface BrowseState {
+  query: string;
+  rankByMatch: boolean;
+  brands: string[];
+  types: TypeKey[];
+  notes: string[];
+  seasons: SeasonKey[];
+  seasonThreshold: SeasonThreshold;
+  minRating: number | null;
+  ownership: 'all' | 'owned' | 'notOwned';
+  ratingState: 'all' | 'tested' | 'unrated';
+  sortKey: SortKey;
+}
+
 export interface ViewState {
   displayMode: 'light' | 'dark' | 'system';
 }
