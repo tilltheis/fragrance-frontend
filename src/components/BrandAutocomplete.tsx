@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { type BrowseState } from '../types';
 import { type SearchStateActions } from '../useSearchState';
 import { type Taxonomy } from '../taxonomy';

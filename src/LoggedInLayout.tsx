@@ -87,8 +87,6 @@ export function LoggedInLayout() {
   const lastSignificantY = useRef(0);
 
   useEffect(() => {
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
     function onScroll() {
       requestAnimationFrame(() => {
         const y = window.scrollY;

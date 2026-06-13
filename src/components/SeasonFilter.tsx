@@ -1,4 +1,4 @@
-import { SEASONS, type SeasonKey, type SeasonThreshold, SEASON_COLORS } from '../types';
+import { SEASONS, type SeasonThreshold, SEASON_COLORS } from '../types';
 import { type BrowseState } from '../types';
 import { type SearchStateActions } from '../useSearchState';
 
