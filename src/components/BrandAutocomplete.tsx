@@ -8,9 +8,10 @@ interface Props {
   state: BrowseState;
   actions: SearchStateActions;
   taxonomy: Taxonomy;
+  brandCounts: Map<string, number>;
 }
 
-export function BrandAutocomplete({ state, actions, taxonomy }: Props) {
+export function BrandAutocomplete({ state, actions, taxonomy, brandCounts }: Props) {
   const [inputValue, setInputValue] = useState('');
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -110,23 +111,27 @@ export function BrandAutocomplete({ state, actions, taxonomy }: Props) {
               max-h-48 overflow-y-auto
             "
           >
-            {suggestions.map((b, i) => (
-              <li
-                key={b.key}
-                id={`brand-option-${i}`}
-                role="option"
-                aria-selected={i === activeIndex}
-                onMouseDown={() => selectBrand(b.key)}
-                className={`
-                  px-3 py-2 text-sm cursor-pointer
-                  ${i === activeIndex ? 'bg-autocomplete-item-hover' : 'hover:bg-autocomplete-item-hover'}
-                  text-dropdown-fg
-                `}
-              >
-                {b.label}
-                <span className="ml-1 text-xs text-fg-muted">({b.count})</span>
-              </li>
-            ))}
+            {suggestions.map((b, i) => {
+              const count = brandCounts.get(b.key) ?? 0;
+              return (
+                <li
+                  key={b.key}
+                  id={`brand-option-${i}`}
+                  role="option"
+                  aria-selected={i === activeIndex}
+                  onMouseDown={() => selectBrand(b.key)}
+                  className={`
+                    px-3 py-2 text-sm cursor-pointer flex justify-between items-center
+                    text-dropdown-fg
+                    ${i === activeIndex ? 'bg-autocomplete-item-hover' : 'hover:bg-autocomplete-item-hover'}
+                    ${count === 0 ? 'opacity-40' : ''}
+                  `}
+                >
+                  <span>{b.label}</span>
+                  {count > 0 && <span className="ml-2 text-xs text-fg-muted">({count})</span>}
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>

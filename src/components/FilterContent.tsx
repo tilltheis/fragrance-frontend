@@ -20,7 +20,7 @@ interface Props {
 export function FilterContent({ state, actions, taxonomy, filterCounts }: Props) {
   return (
     <div className="space-y-6 px-4 py-4">
-      <BrandAutocomplete state={state} actions={actions} taxonomy={taxonomy} />
+      <BrandAutocomplete state={state} actions={actions} taxonomy={taxonomy} brandCounts={filterCounts.brands} />
       <TypeFilterChips state={state} actions={actions} typeCounts={filterCounts.types} />
       <NoteAutocomplete state={state} actions={actions} taxonomy={taxonomy} />
       <SeasonFilter state={state} actions={actions} seasonCounts={filterCounts.seasons} />
