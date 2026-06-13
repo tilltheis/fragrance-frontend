@@ -170,6 +170,25 @@ test('filter panel opens with correct ARIA attributes', async () => {
   expect.soft(await filterDialog().getAttribute('role'), 'role=dialog').toBe('dialog');
 });
 
+test('filter option buttons show dynamic counts in parentheses', async () => {
+  const typeChipText = await filterDialog()
+    .locator('[role="group"][aria-label="Typ auswählen"] button')
+    .first()
+    .textContent();
+  expect.soft(typeChipText, 'type chip has count badge').toMatch(/\(\d+\)/);
+
+  const seasonBtnText = await filterDialog()
+    .locator('[role="group"][aria-label="Jahreszeit auswählen"] button')
+    .first()
+    .textContent();
+  expect.soft(seasonBtnText, 'season button has count badge').toMatch(/\(\d+\)/);
+
+  const ratingBtnText = await filterDialog()
+    .locator('[role="group"][aria-label="Bewertung"] button:nth-child(2)')
+    .textContent();
+  expect.soft(ratingBtnText, 'rating button has count badge').toMatch(/\(\d+\)/);
+});
+
 test('rating filter reduces results and reflects in URL', async () => {
   await filterDialog().locator('button:has-text("7,5+")').click();
   await page.waitForTimeout(300);

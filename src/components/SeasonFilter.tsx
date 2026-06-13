@@ -5,6 +5,7 @@ import { type SearchStateActions } from '../useSearchState';
 interface Props {
   state: BrowseState;
   actions: SearchStateActions;
+  seasonCounts: Map<string, number>;
 }
 
 const THRESHOLDS: { key: SeasonThreshold; label: string }[] = [
@@ -13,7 +14,7 @@ const THRESHOLDS: { key: SeasonThreshold; label: string }[] = [
   { key: 'top', label: 'Hauptsaison' },
 ];
 
-export function SeasonFilter({ state, actions }: Props) {
+export function SeasonFilter({ state, actions, seasonCounts }: Props) {
   return (
     <div>
       <p className="text-sm font-semibold text-fg-base mb-2">Jahreszeit</p>
@@ -36,6 +37,7 @@ export function SeasonFilter({ state, actions }: Props) {
               `}
             >
               {colors.emoji} {season}
+              <span className="ml-1 text-xs opacity-60">({seasonCounts.get(season) ?? 0})</span>
             </button>
           );
         })}

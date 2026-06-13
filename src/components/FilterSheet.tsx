@@ -3,18 +3,20 @@ import { createPortal } from 'react-dom';
 import { type BrowseState } from '../types';
 import { type SearchStateActions } from '../useSearchState';
 import { type Taxonomy } from '../taxonomy';
+import { type FilterCounts } from '../filterCounts';
 import { FilterContent } from './FilterContent';
 
 interface Props {
   state: BrowseState;
   actions: SearchStateActions;
   taxonomy: Taxonomy;
+  filterCounts: FilterCounts;
   filteredCount: number;
   onClose: () => void;
   openerRef: React.RefObject<HTMLElement | null>;
 }
 
-export function FilterSheet({ state, actions, taxonomy, filteredCount, onClose, openerRef }: Props) {
+export function FilterSheet({ state, actions, taxonomy, filterCounts, filteredCount, onClose, openerRef }: Props) {
   const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -78,7 +80,7 @@ export function FilterSheet({ state, actions, taxonomy, filteredCount, onClose, 
           </button>
         </div>
         <div className="overflow-y-auto flex-1">
-          <FilterContent state={state} actions={actions} taxonomy={taxonomy} />
+          <FilterContent state={state} actions={actions} taxonomy={taxonomy} filterCounts={filterCounts} />
         </div>
         <div className="px-4 py-3 border-t border-border-subtle flex-shrink-0">
           <button

@@ -79,9 +79,10 @@ const _tailwindRef = [
 interface Props {
   state: BrowseState;
   actions: SearchStateActions;
+  typeCounts: Map<string, number>;
 }
 
-export function TypeFilterChips({ state, actions }: Props) {
+export function TypeFilterChips({ state, actions, typeCounts }: Props) {
   return (
     <div>
       <p className="text-sm font-semibold text-fg-base mb-2">Typ</p>
@@ -106,6 +107,7 @@ export function TypeFilterChips({ state, actions }: Props) {
               `}
             >
               {TYPE_EMOJIS[type]} {type}
+              <span className="ml-1 text-xs opacity-60">({typeCounts.get(type) ?? 0})</span>
               {active && <span className="ml-1 font-bold">✓</span>}
             </button>
           );

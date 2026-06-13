@@ -72,7 +72,7 @@ export function LoggedInLayout() {
   } = useFragrances(session);
 
   const [browseState, browseActions] = useSearchState();
-  const { filtered, totalCount, filteredCount, taxonomy } = useFilteredFragrances(fragrances, browseState);
+  const { filtered, totalCount, filteredCount, taxonomy, filterCounts } = useFilteredFragrances(fragrances, browseState);
 
   const [cardMode, setCardMode] = useState<FragranceCardMode>(getInitialFragranceCardMode());
   const [modalOpen, setModalOpen] = useState(false);
@@ -202,6 +202,7 @@ export function LoggedInLayout() {
           state={browseState}
           actions={browseActions}
           taxonomy={taxonomy}
+          filterCounts={filterCounts}
           filteredCount={filteredCount}
           onClose={handleCloseFilter}
           openerRef={filterButtonRef}
@@ -213,6 +214,7 @@ export function LoggedInLayout() {
           state={browseState}
           actions={browseActions}
           taxonomy={taxonomy}
+          filterCounts={filterCounts}
           filteredCount={filteredCount}
           onClose={handleCloseFilter}
           openerRef={filterButtonRef}

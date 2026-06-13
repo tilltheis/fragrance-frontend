@@ -4,6 +4,7 @@ import { type SearchStateActions } from '../useSearchState';
 interface Props {
   state: BrowseState;
   actions: SearchStateActions;
+  ratingCounts: Map<number, number>;
 }
 
 const PRESETS: { value: number | null; label: string }[] = [
@@ -16,7 +17,7 @@ const PRESETS: { value: number | null; label: string }[] = [
   { value: 0.9, label: '9,0+' },
 ];
 
-export function RatingFilter({ state, actions }: Props) {
+export function RatingFilter({ state, actions, ratingCounts }: Props) {
   return (
     <div>
       <p className="text-sm font-semibold text-fg-base mb-2">Meine Bewertung</p>
@@ -44,6 +45,9 @@ export function RatingFilter({ state, actions }: Props) {
               `}
             >
               {label}
+              {value !== null && (
+                <span className="ml-1 text-xs opacity-60">({ratingCounts.get(value) ?? 0})</span>
+              )}
             </button>
           );
         })}
