@@ -20,14 +20,22 @@ function FragranceContent({
   error,
   fragrances,
   cardMode,
+  selectedFragranceId,
+  onSelect,
+  onClose,
   onChange,
+  onOwnershipChange,
   onClearFilters,
 }: {
   isPending: boolean;
   error: Error | null | undefined;
   fragrances: Fragrance[] | undefined;
   cardMode: FragranceCardMode;
+  selectedFragranceId?: number;
+  onSelect?: (selectedFragrance: Fragrance) => void;
+  onClose?: (closedFragrance: Fragrance) => void;
   onChange?: (changedDynamicFragranceData: DynamicFragranceData) => void;
+  onOwnershipChange?: (changedDynamicFragranceData: DynamicFragranceData) => void;
   onClearFilters?: () => void;
 }) {
   if (isPending || !fragrances) {
@@ -59,7 +67,17 @@ function FragranceContent({
       </div>
     );
   }
-  return <FragranceGrid fragrances={fragrances} cardMode={cardMode} onChange={onChange} />;
+  return (
+    <FragranceGrid
+      fragrances={fragrances}
+      cardMode={cardMode}
+      selectedFragranceId={selectedFragranceId}
+      onSelect={onSelect}
+      onClose={onClose}
+      onChange={onChange}
+      onOwnershipChange={onOwnershipChange}
+    />
+  );
 }
 
 const MemoizedFragranceContent = React.memo(FragranceContent);
@@ -72,7 +90,13 @@ export function LoggedInLayout() {
   } = useFragrances(session);
 
   const [browseState, browseActions] = useSearchState();
-  const { filtered, totalCount, filteredCount, taxonomy, filterCounts } = useFilteredFragrances(fragrances, browseState);
+  const [selectedFragranceId, setSelectedFragranceId] = useState<number | undefined>();
+  const [deferredOwnershipFragranceId, setDeferredOwnershipFragranceId] = useState<number | undefined>();
+  const { filtered, totalCount, filteredCount, taxonomy, filterCounts } = useFilteredFragrances(
+    fragrances,
+    browseState,
+    deferredOwnershipFragranceId,
+  );
 
   const [cardMode, setCardMode] = useState<FragranceCardMode>(getInitialFragranceCardMode());
   const [modalOpen, setModalOpen] = useState(false);
@@ -111,12 +135,37 @@ export function LoggedInLayout() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  useEffect(() => {
+    if (selectedFragranceId === undefined) return;
+    if (filtered.some((fragrance) => fragrance.id === selectedFragranceId)) return;
+
+    setSelectedFragranceId(undefined);
+    setDeferredOwnershipFragranceId(undefined);
+  }, [filtered, selectedFragranceId]);
+
   const onChange = useCallback(
     (changedDynamicFragranceData: DynamicFragranceData) => {
       saveDynamicFragranceData(changedDynamicFragranceData);
     },
     [saveDynamicFragranceData],
   );
+
+  const onOwnershipChange = useCallback(
+    (changedDynamicFragranceData: DynamicFragranceData) => {
+      setDeferredOwnershipFragranceId(changedDynamicFragranceData.id);
+      saveDynamicFragranceData(changedDynamicFragranceData);
+    },
+    [saveDynamicFragranceData],
+  );
+
+  const handleSelectFragrance = useCallback((selectedFragrance: Fragrance) => {
+    setSelectedFragranceId(selectedFragrance.id);
+  }, []);
+
+  const handleCloseFragrance = useCallback(() => {
+    setSelectedFragranceId(undefined);
+    setDeferredOwnershipFragranceId(undefined);
+  }, []);
 
   function handleModalClose() {
     setModalOpen(false);
@@ -225,7 +274,11 @@ export function LoggedInLayout() {
           error={error}
           fragrances={fragrances ? filtered : undefined}
           cardMode={cardMode}
+          selectedFragranceId={selectedFragranceId}
+          onSelect={handleSelectFragrance}
+          onClose={handleCloseFragrance}
           onChange={onChange}
+          onOwnershipChange={onOwnershipChange}
           onClearFilters={browseActions.clearAllFilters}
         />
       </main>

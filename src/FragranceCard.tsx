@@ -4,6 +4,7 @@ import { OccasionBar } from './OccasionBar';
 import type { Fragrance, LinearNotes, PyramidNotes } from './types';
 import { CommunityRatings } from './CommunityRatings';
 import { RatingBar } from './RatingBar';
+import { PerfumeBottleIcon } from './PerfumeBottleIcon';
 
 export type FragranceCardMode = 'communityStats' | 'scentNotes';
 
@@ -14,6 +15,11 @@ interface CardProps {
 }
 
 export function FragranceCard({ fragrance, mode, onSelect }: CardProps) {
+  const brandName = fragrance.brand || fragrance.brandQuery;
+  const fragranceName = fragrance.name || fragrance.nameQuery;
+  const isOwned = fragrance.owned === true;
+  const accessibleName = `${brandName} ${fragranceName}${isOwned ? ', im Besitz' : ''}`;
+
   const CommunityStats = () => (
     <div>
       <div className="mb-2">
@@ -80,14 +86,24 @@ export function FragranceCard({ fragrance, mode, onSelect }: CardProps) {
 
   return (
     <div
-      className="bg-card-bg text-card-fg border border-card-border rounded-lg p-4 shadow-sm hover:shadow-md hover:bg-card-hover transition-colors cursor-pointer"
+      role="button"
+      tabIndex={0}
+      aria-label={accessibleName}
+      className="relative bg-card-bg text-card-fg border border-card-border rounded-lg p-4 shadow-sm hover:shadow-md hover:bg-card-hover transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
       onClick={() => onSelect?.(fragrance)}
+      onKeyDown={(event) => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        onSelect?.(fragrance);
+      }}
     >
+      {isOwned ? <PerfumeBottleIcon className="pointer-events-none absolute top-4 right-4 text-fg-base/80" /> : null}
+
       {/* Header */}
-      <div className="mb-2">
-        <h4 className="text-sm font-semibold leading-tight text-card-fg">{fragrance.brand || fragrance.brandQuery}</h4>
-        <h3 className="text-lg font-semibold text-card-fg truncate" title={fragrance.name || fragrance.nameQuery}>
-          {fragrance.name || fragrance.nameQuery}
+      <div className={`mb-2 ${isOwned ? 'pr-7' : ''}`}>
+        <h4 className="text-sm font-semibold leading-tight text-card-fg">{brandName}</h4>
+        <h3 className="text-lg font-semibold text-card-fg truncate" title={fragranceName}>
+          {fragranceName}
         </h3>
         <p className="text-sm text-fg-muted">{fragrance.concentration ?? '\u00A0'}</p>
       </div>

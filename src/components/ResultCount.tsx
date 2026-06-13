@@ -20,7 +20,7 @@ export function ResultCount({ filteredCount, totalCount, compact = false }: Prop
 
   return (
     <>
-      <span className="text-sm text-fg-muted">
+      <span data-testid="result-count" className="text-sm text-fg-muted">
         {compact
           ? `${filteredCount}\u202f/\u202f${totalCount}`
           : `${filteredCount} von ${totalCount} Düften`}

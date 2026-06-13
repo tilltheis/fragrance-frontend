@@ -10,14 +10,25 @@ import {
 } from './types';
 import { CommunityRatings } from './CommunityRatings';
 import { EditablePersonalRating } from './EditablePersonalRating';
+import { PerfumeBottleIcon } from './PerfumeBottleIcon';
 
 type FragranceDetailPanelProps = {
   fragrance: Fragrance;
   onClose?: (closedFragrance: Fragrance) => void;
   onChange?: (changedDynamicFragranceData: DynamicFragranceData) => void;
+  onOwnershipChange?: (changedDynamicFragranceData: DynamicFragranceData) => void;
 };
 
-export function FragranceDetailPanel({ fragrance, onClose, onChange }: FragranceDetailPanelProps) {
+export function FragranceDetailPanel({
+  fragrance,
+  onClose,
+  onChange,
+  onOwnershipChange,
+}: FragranceDetailPanelProps) {
+  const brandName = fragrance.brand || fragrance.brandQuery;
+  const fragranceName = fragrance.name || fragrance.nameQuery;
+  const isOwned = fragrance.owned === true;
+
   const CommunityStats = () => (
     <div>
       <div className="mb-2">
@@ -117,9 +128,11 @@ export function FragranceDetailPanel({ fragrance, onClose, onChange }: Fragrance
       "
       >
         <div
+          data-testid="fragrance-detail"
           className="
       max-md:m-4
 
+      relative
       bg-card-bg
       text-card-fg
       border
@@ -132,17 +145,19 @@ export function FragranceDetailPanel({ fragrance, onClose, onChange }: Fragrance
         >
           <button
             onClick={() => onClose?.(fragrance)}
-            className="absolute top-2 right-2 text-fg-muted hover:text-fg-accent"
+            aria-label="Detailansicht schließen"
+            className="absolute top-3 right-3 z-1 rounded p-1 text-fg-muted hover:text-fg-base focus:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
           >
             X
           </button>
+          {isOwned ? (
+            <PerfumeBottleIcon className="pointer-events-none absolute top-4 right-11 text-fg-base/80" />
+          ) : null}
 
           {/* Header */}
-          <div className="mb-2">
-            <h4 className="text-sm font-semibold leading-tight text-card-fg">
-              {fragrance.brand || fragrance.brandQuery}
-            </h4>
-            <h3 className="text-lg font-semibold text-card-fg">{fragrance.name || fragrance.nameQuery}</h3>
+          <div className={`mb-2 ${isOwned ? 'pr-16' : 'pr-10'}`}>
+            <h4 className="text-sm font-semibold leading-tight text-card-fg">{brandName}</h4>
+            <h3 className="text-lg font-semibold text-card-fg">{fragranceName}</h3>
             <p className="text-sm text-fg-muted">{fragrance.concentration ?? '\u00A0'}</p>
           </div>
 
@@ -159,6 +174,7 @@ export function FragranceDetailPanel({ fragrance, onClose, onChange }: Fragrance
                 new Set(['Douglas', 'Flaconi', 'Parfumdreams', 'Notino', 'Sephora', 'Müller', 'Rossmann', 'dm'])
               }
               onChange={onChange}
+              onOwnershipChange={onOwnershipChange}
             />
           </div>
         </div>

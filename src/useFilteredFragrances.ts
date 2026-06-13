@@ -10,6 +10,7 @@ import { sortFragrances } from './sortFragrances';
 export function useFilteredFragrances(
   fragrances: Record<number, Fragrance> | undefined,
   state: BrowseState,
+  retainedOwnershipFragranceId?: number,
 ): {
   filtered: Fragrance[];
   totalCount: number;
@@ -33,15 +34,42 @@ export function useFilteredFragrances(
      state.brands, state.types, state.notes, state.seasons, state.seasonThreshold],
   );
 
+  const reconciledFilteredNorm = useMemo(() => {
+    if (retainedOwnershipFragranceId === undefined || state.ownership === 'all') {
+      return filteredNorm;
+    }
+
+    if (filteredNorm.some((item) => item.fragrance.id === retainedOwnershipFragranceId)) {
+      return filteredNorm;
+    }
+
+    const retainedItem = normalized.find((item) => item.fragrance.id === retainedOwnershipFragranceId);
+    if (!retainedItem) {
+      return filteredNorm;
+    }
+
+    const matchesWithoutOwnership = filterFragrances(
+      [retainedItem],
+      { ...state, ownership: 'all' },
+      taxonomy,
+    ).length === 1;
+
+    if (!matchesWithoutOwnership) {
+      return filteredNorm;
+    }
+
+    return [...filteredNorm, retainedItem];
+  }, [filteredNorm, normalized, retainedOwnershipFragranceId, state, taxonomy]);
+
   const filterCounts = useMemo(
-    () => computeFilterCounts(filteredNorm, state.seasonThreshold),
-    [filteredNorm, state.seasonThreshold],
+    () => computeFilterCounts(reconciledFilteredNorm, state.seasonThreshold),
+    [reconciledFilteredNorm, state.seasonThreshold],
   );
 
   const filtered = useMemo(() => {
-    const scores = computeScores(filteredNorm, state.query);
-    return sortFragrances(filteredNorm, state.sortKey, state.rankByMatch, scores);
-  }, [filteredNorm, state.query, state.sortKey, state.rankByMatch]);
+    const scores = computeScores(reconciledFilteredNorm, state.query);
+    return sortFragrances(reconciledFilteredNorm, state.sortKey, state.rankByMatch, scores);
+  }, [reconciledFilteredNorm, state.query, state.sortKey, state.rankByMatch]);
 
   return {
     filtered,
