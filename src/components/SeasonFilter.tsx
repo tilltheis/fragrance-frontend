@@ -22,6 +22,7 @@ export function SeasonFilter({ state, actions, seasonCounts }: Props) {
         {SEASONS.map((season) => {
           const active = state.seasons.includes(season);
           const colors = SEASON_COLORS[season];
+          const count = seasonCounts.get(season) ?? 0;
           return (
             <button
               key={season}
@@ -32,12 +33,14 @@ export function SeasonFilter({ state, actions, seasonCounts }: Props) {
                 focus:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring
                 ${active
                   ? 'bg-state-selected border-brand-primary text-fg-base font-semibold'
-                  : 'bg-button-secondary-fill border-button-secondary-border text-button-secondary-fg hover:bg-button-secondary-hover'
+                  : count === 0
+                    ? 'bg-button-secondary-fill border-button-secondary-border text-button-secondary-fg opacity-40 hover:opacity-70'
+                    : 'bg-button-secondary-fill border-button-secondary-border text-button-secondary-fg hover:bg-button-secondary-hover'
                 }
               `}
             >
               {colors.emoji} {season}
-              <span className="ml-1 text-xs opacity-60">({seasonCounts.get(season) ?? 0})</span>
+              {count > 0 && <span className="ml-1 text-xs opacity-60">({count})</span>}
             </button>
           );
         })}

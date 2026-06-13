@@ -173,18 +173,22 @@ test('filter panel opens with correct ARIA attributes', async () => {
 test('filter option buttons show dynamic counts in parentheses', async () => {
   const typeChipText = await filterDialog()
     .locator('[role="group"][aria-label="Typ auswählen"] button')
+    .filter({ hasText: /\(\d+\)/ })
     .first()
     .textContent();
   expect.soft(typeChipText, 'type chip has count badge').toMatch(/\(\d+\)/);
 
   const seasonBtnText = await filterDialog()
     .locator('[role="group"][aria-label="Jahreszeit auswählen"] button')
+    .filter({ hasText: /\(\d+\)/ })
     .first()
     .textContent();
   expect.soft(seasonBtnText, 'season button has count badge').toMatch(/\(\d+\)/);
 
   const ratingBtnText = await filterDialog()
-    .locator('[role="group"][aria-label="Bewertung"] button:nth-child(2)')
+    .locator('[role="group"][aria-label="Bewertung"] button')
+    .filter({ hasText: /\(\d+\)/ })
+    .first()
     .textContent();
   expect.soft(ratingBtnText, 'rating button has count badge').toMatch(/\(\d+\)/);
 });

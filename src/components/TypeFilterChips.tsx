@@ -90,6 +90,7 @@ export function TypeFilterChips({ state, actions, typeCounts }: Props) {
         {TYPES.map((type) => {
           const active = state.types.includes(type);
           const token = TYPE_TOKENS[type];
+          const count = typeCounts.get(type) ?? 0;
           return (
             <button
               key={type}
@@ -102,13 +103,14 @@ export function TypeFilterChips({ state, actions, typeCounts }: Props) {
                 bg-type-${token}-bg text-type-${token}-fg
                 ${active
                   ? `border-type-${token}-border ring-2 ring-type-${token}-border font-semibold`
-                  : `border-type-${token}-border opacity-60 hover:opacity-100`
+                  : count === 0
+                    ? `border-type-${token}-border opacity-30 hover:opacity-60`
+                    : `border-type-${token}-border opacity-85 hover:opacity-100`
                 }
               `}
             >
               {TYPE_EMOJIS[type]} {type}
-              <span className="ml-1 text-xs opacity-60">({typeCounts.get(type) ?? 0})</span>
-              {active && <span className="ml-1 font-bold">✓</span>}
+              {count > 0 && <span className="ml-1 text-xs opacity-60">({count})</span>}
             </button>
           );
         })}

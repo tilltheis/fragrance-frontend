@@ -24,6 +24,7 @@ export function RatingFilter({ state, actions, ratingCounts }: Props) {
       <div className="flex flex-wrap gap-2" role="group" aria-label="Bewertung">
         {PRESETS.map(({ value, label }) => {
           const active = value === null ? state.minRating === null : state.minRating === value;
+          const count = value !== null ? (ratingCounts.get(value) ?? 0) : null;
           return (
             <button
               key={label}
@@ -40,13 +41,15 @@ export function RatingFilter({ state, actions, ratingCounts }: Props) {
                 focus:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring
                 ${active
                   ? 'bg-state-selected border-brand-primary text-fg-base font-semibold'
-                  : 'bg-button-secondary-fill border-button-secondary-border text-button-secondary-fg hover:bg-button-secondary-hover'
+                  : count === 0
+                    ? 'bg-button-secondary-fill border-button-secondary-border text-button-secondary-fg opacity-40 hover:opacity-70'
+                    : 'bg-button-secondary-fill border-button-secondary-border text-button-secondary-fg hover:bg-button-secondary-hover'
                 }
               `}
             >
               {label}
-              {value !== null && (
-                <span className="ml-1 text-xs opacity-60">({ratingCounts.get(value) ?? 0})</span>
+              {count !== null && count > 0 && (
+                <span className="ml-1 text-xs opacity-60">({count})</span>
               )}
             </button>
           );
