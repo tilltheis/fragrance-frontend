@@ -94,89 +94,45 @@ export function FragranceDetailPanel({
   };
 
   return (
-    <div
-      className="
-      max-md:global-scroll-lock
-      max-md:fixed
-      max-md:top-0
-      max-md:left-0
-      max-md:bottom-0
-      max-md:right-0
-      max-md:z-1
-      max-md:bg-black/50
-
-      md:col-span-full
-
-      overflow-scroll
-      "
-      onClick={() => onClose?.(fragrance)}
-    >
+    <div className="col-span-full" onClick={() => onClose?.(fragrance)}>
       <div
-        className="
-      landscape:max-md:absolute
-      landscape:max-md:top-0
-      landscape:max-md:right-0
-      landscape:max-md:bottom-0
-      landscape:max-md:left-0
-
-      not-landscape:max-md:flex
-      not-landscape:max-md:items-center
-      not-landscape:max-md:justify-center 
-      
-      max-md:z-2
-      max-md:h-full
-      "
+        data-testid="fragrance-detail"
+        className="relative bg-card-bg text-card-fg border border-card-border rounded-lg p-4 shadow-sm"
+        onClick={(e) => e.stopPropagation()}
       >
-        <div
-          data-testid="fragrance-detail"
-          className="
-      max-md:m-4
-
-      relative
-      bg-card-bg
-      text-card-fg
-      border
-      border-card-border
-      rounded-lg
-      p-4
-      shadow-sm
-      "
-          onClick={(e) => e.stopPropagation()}
+        <button
+          onClick={() => onClose?.(fragrance)}
+          aria-label="Detailansicht schließen"
+          className="absolute top-3 right-3 z-1 rounded p-1 text-fg-muted hover:text-fg-base focus:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
         >
-          <button
-            onClick={() => onClose?.(fragrance)}
-            aria-label="Detailansicht schließen"
-            className="absolute top-3 right-3 z-1 rounded p-1 text-fg-muted hover:text-fg-base focus:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
-          >
-            X
-          </button>
-          {isOwned ? (
-            <PerfumeBottleIcon className="pointer-events-none absolute top-4 right-11 text-fg-base/80" />
-          ) : null}
+          X
+        </button>
+        {isOwned ? (
+          <PerfumeBottleIcon className="pointer-events-none absolute top-4 right-11 text-fg-base/80" />
+        ) : null}
 
-          {/* Header */}
-          <div className={`mb-2 ${isOwned ? 'pr-16' : 'pr-10'}`}>
-            <h4 className="text-sm font-semibold leading-tight text-card-fg">{brandName}</h4>
-            <h3 className="text-lg font-semibold text-card-fg">{fragranceName}</h3>
-            <p className="text-sm text-fg-muted">{fragrance.concentration ?? '\u00A0'}</p>
+        {/* Header */}
+        <div className={`mb-2 ${isOwned ? 'pr-16' : 'pr-10'}`}>
+          <h4 className="text-sm font-semibold leading-tight text-card-fg">{brandName}</h4>
+          <h3 className="text-lg font-semibold text-card-fg">{fragranceName}</h3>
+          <p className="text-sm text-fg-muted">{fragrance.concentration ?? '\u00A0'}</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <TypeChips className="mb-2 h-auto" typeMap={fragrance.type} />
+            <NotesView />
+            <CommunityStats />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <TypeChips className="mb-2 h-auto" typeMap={fragrance.type} />
-              <NotesView />
-              <CommunityStats />
-            </div>
-
-            <EditablePersonalRating
-              data={toDynamicFragranceData(fragrance)}
-              sellerOptions={
-                new Set(['Douglas', 'Flaconi', 'Parfumdreams', 'Notino', 'Sephora', 'Müller', 'Rossmann', 'dm'])
-              }
-              onChange={onChange}
-              onOwnershipChange={onOwnershipChange}
-            />
-          </div>
+          <EditablePersonalRating
+            data={toDynamicFragranceData(fragrance)}
+            sellerOptions={
+              new Set(['Douglas', 'Flaconi', 'Parfumdreams', 'Notino', 'Sephora', 'Müller', 'Rossmann', 'dm'])
+            }
+            onChange={onChange}
+            onOwnershipChange={onOwnershipChange}
+          />
         </div>
       </div>
     </div>
