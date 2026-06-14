@@ -31,6 +31,7 @@ test.describe.configure({ mode: 'serial' });
 
 let browser: Browser;
 let page: Page;
+let totalFragranceCount: number;
 
 test.beforeAll(async ({ playwright }) => {
   browser = await playwright.chromium.launch({ headless: true });
@@ -45,6 +46,9 @@ test.beforeAll(async ({ playwright }) => {
   await page.locator('button:has-text("Log In")').click();
   await page.waitForSelector('input[role="searchbox"]', { timeout: 15000 });
   await page.waitForTimeout(1500);
+
+  const initialCountText = await resultCount().textContent();
+  totalFragranceCount = parseResultCount(initialCountText).total;
 });
 
 test.afterAll(async () => {
@@ -60,6 +64,11 @@ function filterBtn() { return page.locator('button[aria-label="Filter"], button[
 function quickView(label: string) { return page.locator(`[role="group"][aria-label="Schnellfilter"] button:has-text("${label}")`); }
 function resultCount() { return page.locator('text=/von.*Düften/').first(); }
 function filterDialog() { return page.locator('[role="dialog"][aria-label="Filter"]').filter({ visible: true }); }
+function parseResultCount(text: string | null): { filtered: number; total: number } {
+  const match = text?.match(/(\d+)\s+von\s+(\d+)\s+Düften/);
+  if (!match) throw new Error(`Unexpected result count format: ${text}`);
+  return { filtered: parseInt(match[1], 10), total: parseInt(match[2], 10) };
+}
 
 // ---------------------------------------------------------------------------
 // Search
@@ -80,10 +89,10 @@ test('search is case-insensitive', async () => {
   expect.soft(await resultCount().textContent(), 'same count regardless of case').toBe(upper);
 });
 
-test('clearing search restores all 366 fragrances', async () => {
+test('clearing search restores all fragrances', async () => {
   await page.locator('input[role="searchbox"]').fill('');
   await page.waitForTimeout(300);
-  expect.soft(await resultCount().textContent()).toBe('366 von 366 Düften');
+  expect.soft(await resultCount().textContent()).toBe(`${totalFragranceCount} von ${totalFragranceCount} Düften`);
 });
 
 // ---------------------------------------------------------------------------
@@ -94,7 +103,7 @@ test('quick view "Am besten bewertet" filters and sets aria-pressed', async () =
   await quickView('Am besten bewertet').click();
   await page.waitForTimeout(300);
   expect.soft(await quickView('Am besten bewertet').getAttribute('aria-pressed'), 'aria-pressed=true').toBe('true');
-  expect.soft(parseInt((await resultCount().textContent())!), 'result count reduced').toBeLessThan(366);
+  expect.soft(parseResultCount(await resultCount().textContent()).filtered, 'result count reduced').toBeLessThan(totalFragranceCount);
 
   // Clicking again deactivates it
   await quickView('Am besten bewertet').click();
@@ -105,7 +114,7 @@ test('quick view "Am besten bewertet" filters and sets aria-pressed', async () =
 test('quick view "Im Besitz" shows only owned fragrances', async () => {
   await quickView('Im Besitz').click();
   await page.waitForTimeout(300);
-  expect.soft(parseInt((await resultCount().textContent())!), 'result count reduced').toBeLessThan(366);
+  expect.soft(parseResultCount(await resultCount().textContent()).filtered, 'result count reduced').toBeLessThan(totalFragranceCount);
   await quickView('Im Besitz').click();
   await page.waitForTimeout(200);
 });
@@ -113,7 +122,7 @@ test('quick view "Im Besitz" shows only owned fragrances', async () => {
 test('quick view "Getestet" shows only tested fragrances', async () => {
   await quickView('Getestet').click();
   await page.waitForTimeout(300);
-  expect.soft(parseInt((await resultCount().textContent())!), 'result count reduced').toBeLessThan(366);
+  expect.soft(parseResultCount(await resultCount().textContent()).filtered, 'result count reduced').toBeLessThan(totalFragranceCount);
   await quickView('Getestet').click();
   await page.waitForTimeout(200);
 });
@@ -128,7 +137,7 @@ test('"Alle" quick view clears all active quick views and resets results', async
   await quickView('Alle').click();
   await page.waitForTimeout(200);
 
-  expect.soft(await resultCount().textContent(), 'all results restored').toBe('366 von 366 Düften');
+  expect.soft(await resultCount().textContent(), 'all results restored').toBe(`${totalFragranceCount} von ${totalFragranceCount} Düften`);
   expect.soft(await quickView('Alle').getAttribute('aria-pressed'), '"Alle" is pressed').toBe('true');
 });
 
@@ -197,7 +206,7 @@ test('rating filter reduces results and reflects in URL', async () => {
   await filterDialog().locator('button:has-text("7,5+")').click();
   await page.waitForTimeout(300);
 
-  expect.soft(parseInt((await resultCount().textContent())!), 'results reduced').toBeLessThan(366);
+  expect.soft(parseResultCount(await resultCount().textContent()).filtered, 'results reduced').toBeLessThan(totalFragranceCount);
   expect.soft(page.url(), 'mr=75 in URL').toContain('mr=75');
 });
 
@@ -235,13 +244,13 @@ test('selecting "Unbewertet" clears the minimum-rating filter (conflict resoluti
   ).toBe('false');
 });
 
-test('"Alle löschen" restores all 366 fragrances', async () => {
+test('"Alle löschen" restores all fragrances', async () => {
   const clearBtn = page.locator('button:has-text("Alle löschen"), button:has-text("Alle Filter löschen")').first();
   if (await clearBtn.isVisible()) {
     await clearBtn.click();
     await page.waitForTimeout(200);
   }
-  expect.soft(await resultCount().textContent()).toBe('366 von 366 Düften');
+  expect.soft(await resultCount().textContent()).toBe(`${totalFragranceCount} von ${totalFragranceCount} Düften`);
 });
 
 // ---------------------------------------------------------------------------
@@ -427,6 +436,12 @@ test('mobile viewport shows abbreviated quick-view labels and opens the filter s
   await page.waitForLoadState('networkidle');
   await page.waitForSelector('input[role="searchbox"]', { timeout: 15000 });
   await page.waitForTimeout(1500);
+
+  const hasHorizontalOverflow = await page.evaluate(() => {
+    const doc = document.documentElement;
+    return doc.scrollWidth > doc.clientWidth;
+  });
+  expect.soft(hasHorizontalOverflow, 'mobile layout does not overflow horizontally').toBe(false);
 
   expect.soft(
     await page.locator('[role="group"][aria-label="Schnellfilter"] .sm\\:hidden').count() > 0,

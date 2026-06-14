@@ -194,7 +194,7 @@ export function LoggedInLayout() {
             {fragrances && `${totalCount} Düfte in der Sammlung`}
           </p>
         </div>
-        <div className="flex gap-2 items-center">
+        <div className="mt-3 flex flex-wrap gap-2 items-center md:mt-0 md:justify-end">
           <button
             ref={addButtonRef}
             onClick={() => setModalOpen(true)}
